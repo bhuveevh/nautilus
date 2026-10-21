@@ -14,6 +14,18 @@ PREFIX="/usr"
 echo "==> Staging into pkgroot (version $VER, arch $ARCH)"
 DESTDIR="$PWD/pkgroot" ninja -C builddir install
 
+echo "==> Tidying staged tree"
+# Convenience alias so `opentiafiles` works as well as `opentia-files`.
+ln -sf opentia-files pkgroot/usr/bin/opentiafiles
+# Drop developer-only files; they would clash with the distro's -dev package and
+# are not needed at runtime.
+rm -rf pkgroot/usr/include/nautilus
+rm -f  pkgroot/usr/share/gir-1.0/Nautilus-*.gir
+rm -f  pkgroot/usr/lib/*/pkgconfig/libnautilus-extension-4.pc
+rmdir  pkgroot/usr/lib/*/pkgconfig 2>/dev/null || true
+rmdir  pkgroot/usr/include 2>/dev/null || true
+rmdir  pkgroot/usr/share/gir-1.0 2>/dev/null || true
+
 echo "==> Computing runtime dependencies (dpkg-shlibdeps)"
 DEPS=""
 if command -v dpkg-shlibdeps >/dev/null 2>&1; then
@@ -40,8 +52,7 @@ EOF
       $(ls pkgroot/usr/lib/*/nautilus/extensions-*/*.so 2>/dev/null || true) \
       2>/dev/null | sed -n 's/^shlibs:Depends=//p' || true)"
 fi
-# Fallback that tolerates both the pre- and post-t64 / tracker->tinysparql names
-[ -n "$DEPS" ] || DEPS="libgtk-4-1 | libgtk-4-1t64, libadwaita-1-0, libglib2.0-0, libgnome-desktop-4-2 | libgnome-desktop-4-2t64, libtinysparql-3.0-0 | libtracker-sparql-3.0-0"
+[ -n "$DEPS" ] || DEPS="libgtk-4-1 | libgtk-4-1t64, libadwaita-1-0, libglib2.0-0 | libglib2.0-0t64, libgnome-desktop-4-2 | libgnome-desktop-4-2t64, libtinysparql-3.0-0 | libtracker-sparql-3.0-0"
 echo "    Depends: $DEPS"
 
 echo "==> Writing control metadata"
@@ -56,18 +67,18 @@ Installed-Size: $SIZE
 Section: gnome
 Priority: optional
 Provides: nautilus
-Conflicts: nautilus, nautilus-data
-Replaces: nautilus, nautilus-data, libnautilus-extension4, gir1.2-nautilus-4.1, libnautilus-extension-dev
+Replaces: nautilus, nautilus-data, libnautilus-extension4, gir1.2-nautilus-4.0, gir1.2-nautilus-4.1, libnautilus-extension-dev
 Depends: $DEPS
 Description: OpentiaFiles - file manager with a Windows Explorer look
  OpentiaFiles is a fork of GNOME Files (Nautilus) whose chrome is arranged
  like Windows File Explorer: window controls on the right, a classic
  File/Edit/View/Go/Help menu bar, a New/Cut/Copy/Paste/Rename/Delete
- command bar and a squarer address bar. It registers itself as a handler
- for inode/directory and as the org.freedesktop.FileManager1 provider, so
- it can be used as the default file manager and in "Open With".
+ command bar and a squarer address bar.
  .
- It replaces the distribution's Files (nautilus) package, which it Provides.
+ It is co-installable with the distribution's Files (nautilus): the few files
+ that both packages provide are taken over via Replaces, and OpentiaFiles
+ registers itself as the default handler for folders and as the
+ org.freedesktop.FileManager1 provider.
 EOF
 
 echo "==> Writing maintainer scripts"

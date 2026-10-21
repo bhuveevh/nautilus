@@ -68,15 +68,17 @@ jobs:
           path: nsrc/opentiafiles_*.deb
           if-no-files-found: error
 
-      - name: Verify the .deb installs over the distro's nautilus
+      - name: Verify the .deb installs alongside the distro's nautilus
         working-directory: nsrc
         run: |
           set -eux
           apt-get install -y --no-install-recommends nautilus || true
           apt-get install -y ./*.deb
-          dpkg -s opentiafiles | grep -E '^(Status|Version)'
+          dpkg -s opentiafiles | grep -E '^Status'
+          dpkg -s nautilus    | grep -E '^Status'
           test -x /usr/bin/opentia-files
-          echo "INSTALL OK"
+          test -x /usr/bin/opentiafiles
+          echo "INSTALL OK (coexists with nautilus)"
 
   build-50:
     name: .deb for GNOME 50
@@ -139,12 +141,14 @@ jobs:
           path: nsrc/opentiafiles_*.deb
           if-no-files-found: error
 
-      - name: Verify the .deb installs over the distro's nautilus
+      - name: Verify the .deb installs alongside the distro's nautilus
         working-directory: nsrc
         run: |
           set -eux
           apt-get install -y --no-install-recommends nautilus || true
           apt-get install -y ./*.deb
-          dpkg -s opentiafiles | grep -E '^(Status|Version)'
+          dpkg -s opentiafiles | grep -E '^Status'
+          dpkg -s nautilus    | grep -E '^Status'
           test -x /usr/bin/opentia-files
-          echo "INSTALL OK"
+          test -x /usr/bin/opentiafiles
+          echo "INSTALL OK (coexists with nautilus)"
