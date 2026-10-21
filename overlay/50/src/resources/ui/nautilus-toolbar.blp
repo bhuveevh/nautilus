@@ -4,8 +4,7 @@ using Adw 1;
 template $NautilusToolbar: Adw.Bin {
   Adw.HeaderBar {
     /* Windows Explorer style: window controls (minimize / maximize / close)
-     * sit on the right-hand side of the title bar. Empty left side is denoted
-     * by the leading colon. */
+     * sit on the right-hand side of the title bar. */
     decoration-layout: ":minimize,maximize,close";
 
     /* Left side: navigation-pane toggle, then Back / Forward. */
@@ -30,8 +29,7 @@ template $NautilusToolbar: Adw.Bin {
       Adw.Bin history_controls_placeholder {}
     }
 
-    /* Centre: the address bar (breadcrumb path, editable location or search).
-     * It expands to fill the middle, like the Explorer address bar. */
+    /* Centre: the address bar. */
     [title]
     Box header_toolbar {
       hexpand: true;
@@ -79,8 +77,7 @@ template $NautilusToolbar: Adw.Bin {
       }
     }
 
-    /* Right side: search box, view options and New Folder — the Windows
-     * order of the right-hand controls. */
+    /* Right side: search, view options, New Folder. */
     [end]
     Stack search_button_stack {
       hhomogeneous: true;

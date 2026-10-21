@@ -80,6 +80,21 @@ jobs:
           test -x /usr/bin/opentiafiles
           echo "INSTALL OK (coexists with nautilus)"
 
+      - name: Smoke test - does the window actually start?
+        working-directory: nsrc
+        run: |
+          set -eux
+          apt-get install -y --no-install-recommends xvfb dbus || true
+          set +e
+          out="$(dbus-run-session -- xvfb-run -a timeout 20 /usr/bin/opentia-files 2>&1)"
+          set -e
+          echo "$out" | tail -40
+          if echo "$out" | grep -Eq "Unable to load resource|assertion failed|Bail out"; then
+            echo "SMOKE TEST FAILED"
+            exit 1
+          fi
+          echo "SMOKE TEST OK"
+
   build-50:
     name: .deb for GNOME 50
     runs-on: ubuntu-latest
@@ -152,3 +167,18 @@ jobs:
           test -x /usr/bin/opentia-files
           test -x /usr/bin/opentiafiles
           echo "INSTALL OK (coexists with nautilus)"
+
+      - name: Smoke test - does the window actually start?
+        working-directory: nsrc
+        run: |
+          set -eux
+          apt-get install -y --no-install-recommends xvfb dbus || true
+          set +e
+          out="$(dbus-run-session -- xvfb-run -a timeout 20 /usr/bin/opentia-files 2>&1)"
+          set -e
+          echo "$out" | tail -40
+          if echo "$out" | grep -Eq "Unable to load resource|assertion failed|Bail out"; then
+            echo "SMOKE TEST FAILED"
+            exit 1
+          fi
+          echo "SMOKE TEST OK"

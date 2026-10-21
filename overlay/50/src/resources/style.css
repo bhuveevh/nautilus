@@ -392,15 +392,8 @@ rubberband {
 
 /* ==========================================================================
  * Windows Explorer look
- * ==========================================================================
- * These rules only restyle the chrome that the Blueprint UI now arranges like
- * Windows Explorer (classic menu bar, command bar, squarer address bar). No
- * behaviour or action is changed: every command is still a stock GNOME action
- * and every keyboard shortcut and context menu keeps working.
- */
+ * ========================================================================== */
 
-/* Classic menu bar (File / Edit / View / Go / Help): flat and light, with a
- * separator along the bottom. */
 menubar {
   background-color: @headerbar_bg_color;
   border-bottom: 1px solid var(--border-color);
@@ -421,8 +414,6 @@ menubar > item:selected {
   background-color: var(--accent-bg-color);
 }
 
-/* Windows-style command bar (New / Cut / Copy / Paste / Rename / Delete /
- * Properties) sitting under the menu bar. */
 .command-bar {
   padding: 4px 6px;
   border-bottom: 1px solid var(--border-color);
@@ -444,7 +435,6 @@ menubar > item:selected {
   background-color: color-mix(in srgb, var(--accent-bg-color) 35%, transparent);
 }
 
-/* Explorer-style address bar: a flat rectangle rather than the GNOME pill. */
 .nautilus-pathbar {
   border-radius: 4px;
 }

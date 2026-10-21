@@ -100,9 +100,7 @@ menu tab_menu_model {
   }
 }
 
-/* Windows Explorer style classic menu bar (File / Edit / View / Go / Help).
- * It exposes the very same GNOME actions as the hamburger menu — nothing is
- * removed, the commands are just surfaced in the places Windows users expect. */
+/* Windows Explorer style classic menu bar (File / Edit / View / Go / Help). */
 menu menubar_model {
   submenu {
     label: _("_File");
@@ -341,8 +339,7 @@ template $NautilusWindow: Adw.ApplicationWindow {
             halign: fill;
           }
 
-          /* Windows Explorer style: command bar. Every button drives an
-           * existing GNOME "view.*" action, so behaviour is unchanged. */
+          /* Windows Explorer style: command bar (existing GNOME view.* actions). */
           [top]
           Box command_bar {
             styles [
@@ -406,6 +403,7 @@ template $NautilusWindow: Adw.ApplicationWindow {
               tooltip-text: _("Properties");
               focus-on-click: false;
             }
+
           }
 
           [top]
