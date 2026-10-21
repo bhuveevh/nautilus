@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The GNOME project contributors
+ * Copyright (C) 2023 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -35,9 +35,9 @@ struct _NautilusRenameFilePopover
     gulong file_changed_handler_id;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusRenameFilePopover,
-                     nautilus_rename_file_popover,
-                     GTK_TYPE_POPOVER);
+G_DEFINE_TYPE (NautilusRenameFilePopover,
+               nautilus_rename_file_popover,
+               GTK_TYPE_POPOVER);
 
 static void
 disconnect_signal_handlers (NautilusRenameFilePopover *self)
@@ -291,7 +291,7 @@ nautilus_rename_file_popover_class_init (NautilusRenameFilePopoverClass *klass)
     object_class->dispose = nautilus_rename_file_popover_dispose;
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-rename-file-popover.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-rename-file-popover.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusRenameFilePopover, name_entry);
     gtk_widget_class_bind_template_child (widget_class, NautilusRenameFilePopover, title_label);

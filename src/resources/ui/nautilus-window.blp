@@ -14,11 +14,6 @@ menu app_menu {
       action: "win.new-tab";
       verb-icon: "tab-new-symbolic";
     }
-
-    item {
-      label: _("Show All Ta_bs");
-      action: "win.open-tab-overview";
-    }
   }
 
   section undo_redo_section {
@@ -105,25 +100,173 @@ menu tab_menu_model {
   }
 }
 
-menu tab_overview_menu_model {
-  section {
+/* Windows Explorer style classic menu bar (File / Edit / View / Go / Help).
+ * It exposes the very same GNOME actions as the hamburger menu — nothing is
+ * removed, the commands are just surfaced in the places Windows users expect. */
+menu menubar_model {
+  submenu {
+    label: _("_File");
+
     item {
       label: _("New _Window");
-      action: "app.clone-window";
+      action: "app.new-window";
+      icon: "window-new-symbolic";
     }
 
     item {
-      label: _("Re_store Closed Tab");
-      action: "win.restore-tab";
+      label: _("New _Tab");
+      action: "win.new-tab";
+      icon: "tab-new-symbolic";
+    }
+
+    item {
+      label: _("New _Folder");
+      action: "view.new-folder";
+      icon: "folder-new-symbolic";
+    }
+
+    section {
+      item {
+        label: _("_Close Tab");
+        action: "win.close-current-view";
+      }
+
+      item {
+        label: _("_Quit");
+        action: "app.quit";
+      }
+    }
+  }
+
+  submenu {
+    label: _("_Edit");
+
+    item {
+      label: _("_Undo");
+      action: "win.undo";
+      icon: "edit-undo-symbolic";
+    }
+
+    item {
+      label: _("_Redo");
+      action: "win.redo";
+    }
+
+    section {
+      item {
+        label: _("Cu_t");
+        action: "view.cut";
+        icon: "edit-cut-symbolic";
+      }
+
+      item {
+        label: _("_Copy");
+        action: "view.copy";
+        icon: "edit-copy-symbolic";
+      }
+
+      item {
+        label: _("_Paste");
+        action: "view.paste";
+        icon: "edit-paste-symbolic";
+      }
+    }
+
+    section {
+      item {
+        label: _("Select _All");
+        action: "view.select-all";
+        icon: "edit-select-all-symbolic";
+      }
+
+      item {
+        label: _("_Rename…");
+        action: "view.rename";
+        icon: "document-edit-symbolic";
+      }
+
+      item {
+        label: _("_Delete");
+        action: "view.move-to-trash";
+        icon: "user-trash-symbolic";
+      }
+    }
+
+    section {
+      item {
+        label: _("P_roperties");
+        action: "view.properties";
+        icon: "document-properties-symbolic";
+      }
+    }
+  }
+
+  submenu {
+    label: _("_View");
+
+    item {
+      label: _("Zoom _In");
+      action: "view.zoom-in";
+      icon: "zoom-in-symbolic";
+    }
+
+    item {
+      label: _("Zoom _Out");
+      action: "view.zoom-out";
+      icon: "zoom-out-symbolic";
+    }
+
+    item {
+      label: _("_Normal Size");
+      action: "view.zoom-standard";
+    }
+
+    section {
+      item {
+        label: _("Show _Hidden Files");
+        action: "view.show-hidden-files";
+      }
+    }
+  }
+
+  submenu {
+    label: _("_Go");
+
+    item {
+      label: _("_Back");
+      action: "slot.back";
+      icon: "go-previous-symbolic";
+    }
+
+    item {
+      label: _("_Forward");
+      action: "slot.forward";
+      icon: "go-next-symbolic";
+    }
+
+    item {
+      label: _("_Home");
+      action: "win.go-home";
+    }
+  }
+
+  submenu {
+    label: _("_Help");
+
+    item {
+      label: _("_Help");
+      action: "app.help";
+    }
+
+    item {
+      label: _("_About Files");
+      action: "app.about";
     }
   }
 }
 
 template $NautilusWindow: Adw.ApplicationWindow {
-  default-height: 550;
-  default-width: 890;
-  height-request: 294;
-  width-request: 360;
+  height-request: 380;
   show-menubar: false;
   title: bind template.active-slot as <$NautilusWindowSlot>.title;
 
@@ -133,106 +276,166 @@ template $NautilusWindow: Adw.ApplicationWindow {
 
   $NautilusShortcutManager {
     child: Adw.ToastOverlay toast_overlay {
-      child: Adw.TabOverview tab_overview {
-        view: tab_view;
-        enable-new-tab: true;
-        secondary-menu: tab_overview_menu_model;
-        create-tab => $create_tab_cb() swapped;
+      child: Adw.OverlaySplitView split_view {
+        enable-show-gesture: false;
+        enable-hide-gesture: false;
+        max-sidebar-width: 240;
+        sidebar-width-unit: px;
+        sidebar-width-fraction: 0.2;
 
-        child: Adw.OverlaySplitView split_view {
-          enable-show-gesture: false;
-          enable-hide-gesture: false;
-          sidebar-width-fraction: 0.2;
+        sidebar: Adw.ToolbarView {
+          reveal-bottom-bars: bind progress_indicator.reveal;
 
-          sidebar: Adw.ToolbarView {
-            reveal-bottom-bars: bind progress_indicator.reveal;
+          [top]
+          Adw.HeaderBar {
+            decoration-layout: ":minimize,maximize,close";
 
-            [top]
-            Adw.HeaderBar {
-              [start]
-              ToggleButton {
-                tooltip-text: _("Search Everywhere");
-                action-name: "slot.search-global";
-                icon-name: "edit-find-symbolic";
-              }
-
-              title-widget: Adw.WindowTitle {
-                title: _("Files");
-              };
-
-              [end]
-              MenuButton {
-                tooltip-text: _("Main Menu");
-                icon-name: "open-menu-symbolic";
-                menu-model: app_menu;
-              }
+            [start]
+            ToggleButton {
+              tooltip-text: _("Search Everywhere");
+              action-name: "slot.search-global";
+              icon-name: "edit-find-symbolic";
             }
 
-            [bottom]
-            Box {
-              styles [
-                "toolbar",
-              ]
-
-              $NautilusProgressIndicator progress_indicator {}
-            }
-
-            content: $NautilusSidebar places_sidebar {
-              vexpand: true;
-              window-slot: bind template.active-slot;
-            };
-          };
-
-          content: Adw.ToolbarView {
-            [top]
-            $NautilusToolbar toolbar {
-              show-view-controls: true;
-              show-history-controls: true;
-              sidebar-button-active: bind split_view.show-sidebar bidirectional;
-              window-slot: bind template.active-slot;
-            }
-
-            [top]
-            Adw.TabBar tab_bar {
-              view: tab_view;
-            }
-
-            content: Adw.TabView tab_view {
-              menu-model: tab_menu_model;
-              close-page => $tab_view_close_page_cb();
-              setup-menu => $tab_view_setup_menu_cb();
-              notify::selected-page => $tab_view_notify_selected_page_cb();
-              create-window => $tab_view_create_window_cb();
-              page-attached => $tab_view_page_attached_cb();
-              page-detached => $tab_view_page_detached_cb();
+            title-widget: Adw.WindowTitle {
+              title: _("Files");
             };
 
-            [bottom]
-            $NautilusNetworkAddressBar network_address_bar {
-              visible: false;
+            [end]
+            MenuButton {
+              tooltip-text: _("Main Menu");
+              icon-name: "open-menu-symbolic";
+              menu-model: app_menu;
             }
+          }
 
-            [bottom]
-            ActionBar action_bar {
-              revealed: false;
+          [bottom]
+          Box {
+            styles [
+              "toolbar",
+            ]
 
-              [start]
-              $NautilusHistoryControls {
-                window-slot: bind template.active-slot;
-              }
+            $NautilusProgressIndicator progress_indicator {}
+          }
 
-              [end]
-              $NautilusViewControls {
-                window-slot: bind template.active-slot;
-              }
-
-              [end]
-              Adw.TabButton {
-                view: tab_view;
-                action-name: "win.open-tab-overview";
-              }
-            }
+          content: $NautilusSidebar places_sidebar {
+            vexpand: true;
+            window-slot: bind template.active-slot;
           };
+        };
+
+        content: Adw.ToolbarView {
+          [top]
+          $NautilusToolbar toolbar {
+            show-view-controls: true;
+            show-history-controls: true;
+            sidebar-button-active: bind split_view.show-sidebar bidirectional;
+            window-slot: bind template.active-slot;
+          }
+
+
+          /* Windows Explorer style: classic menu bar below the title/address bar. */
+          [top]
+          PopoverMenuBar menubar {
+            menu-model: menubar_model;
+            halign: fill;
+          }
+
+          /* Windows Explorer style: command bar. Every button drives an
+           * existing GNOME "view.*" action, so behaviour is unchanged. */
+          [top]
+          Box command_bar {
+            styles [
+              "toolbar",
+              "command-bar",
+            ]
+            spacing: 6;
+
+            Button {
+              action-name: "view.new-folder";
+              icon-name: "folder-new-symbolic";
+              label: _("New");
+              tooltip-text: _("New Folder");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.cut";
+              icon-name: "edit-cut-symbolic";
+              label: _("Cut");
+              tooltip-text: _("Cut");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.copy";
+              icon-name: "edit-copy-symbolic";
+              label: _("Copy");
+              tooltip-text: _("Copy");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.paste";
+              icon-name: "edit-paste-symbolic";
+              label: _("Paste");
+              tooltip-text: _("Paste");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.rename";
+              icon-name: "document-edit-symbolic";
+              label: _("Rename");
+              tooltip-text: _("Rename");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.move-to-trash";
+              icon-name: "user-trash-symbolic";
+              label: _("Delete");
+              tooltip-text: _("Move to Trash");
+              focus-on-click: false;
+            }
+
+            Button {
+              action-name: "view.properties";
+              icon-name: "document-properties-symbolic";
+              label: _("Properties");
+              tooltip-text: _("Properties");
+              focus-on-click: false;
+            }
+          }
+
+          [top]
+          Adw.TabBar tab_bar {
+            view: tab_view;
+          }
+
+          content: Adw.TabView tab_view {
+            menu-model: tab_menu_model;
+          };
+
+          [bottom]
+          $NautilusNetworkAddressBar network_address_bar {
+            visible: false;
+          }
+
+          [bottom]
+          ActionBar action_bar {
+            revealed: false;
+
+            [start]
+            $NautilusHistoryControls {
+              window-slot: bind template.active-slot;
+            }
+
+            [end]
+            $NautilusViewControls {
+              window-slot: bind template.active-slot;
+            }
+          }
         };
       };
     };
@@ -245,13 +448,11 @@ template $NautilusWindow: Adw.ApplicationWindow {
       split_view.collapsed: true;
       split_view.enable-show-gesture: true;
       split_view.enable-hide-gesture: true;
-      split_view.sidebar-width-unit: px;
       toolbar.show-sidebar-button: true;
       toolbar.show-view-controls: false;
       toolbar.show-history-controls: false;
       action_bar.revealed: true;
       progress_indicator.popover-position: 2;
-      tab_bar.visible: false;
     }
   }
 }

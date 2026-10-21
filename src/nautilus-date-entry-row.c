@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2025 The GNOME project contributors
+ * Copyright (C) 2025 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
@@ -219,7 +219,7 @@ nautilus_date_entry_row_class_init (NautilusDateEntryRowClass *klass)
 
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-date-entry-row.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-date-entry-row.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusDateEntryRow, calendar);
     gtk_widget_class_bind_template_child (widget_class, NautilusDateEntryRow, popover);

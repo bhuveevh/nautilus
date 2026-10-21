@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022 The GNOME project contributors
+ * Copyright (C) 2022 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -109,7 +109,7 @@ nautilus_progress_indicator_set_reveal (NautilusProgressIndicator *self,
     }
 }
 
-static void
+static gboolean
 on_remove_finished_operations_timeout (NautilusProgressIndicator *self)
 {
     nautilus_progress_info_manager_remove_finished_or_cancelled_infos (self->progress_manager);
@@ -123,6 +123,8 @@ on_remove_finished_operations_timeout (NautilusProgressIndicator *self)
     }
 
     self->remove_finished_operations_timeout_id = 0;
+
+    return G_SOURCE_REMOVE;
 }
 
 static void
@@ -141,9 +143,9 @@ schedule_remove_finished_operations (NautilusProgressIndicator *self)
     if (self->remove_finished_operations_timeout_id == 0)
     {
         self->remove_finished_operations_timeout_id =
-            g_timeout_add_seconds_once (REMOVE_FINISHED_OPERATIONS_TIEMOUT,
-                                        (GSourceOnceFunc) on_remove_finished_operations_timeout,
-                                        self);
+            g_timeout_add_seconds (REMOVE_FINISHED_OPERATIONS_TIEMOUT,
+                                   (GSourceFunc) on_remove_finished_operations_timeout,
+                                   self);
     }
 }
 
@@ -153,11 +155,13 @@ remove_operations_button_attention_style (NautilusProgressIndicator *self)
     gtk_widget_remove_css_class (GTK_WIDGET (self), "needs-attention");
 }
 
-static void
+static gboolean
 on_remove_operations_button_attention_style_timeout (NautilusProgressIndicator *self)
 {
     remove_operations_button_attention_style (self);
     self->operations_button_attention_timeout_id = 0;
+
+    return G_SOURCE_REMOVE;
 }
 
 static void
@@ -177,10 +181,9 @@ add_operations_button_attention_style (NautilusProgressIndicator *self)
     remove_operations_button_attention_style (self);
 
     gtk_widget_add_css_class (GTK_WIDGET (self), "needs-attention");
-    self->operations_button_attention_timeout_id =
-        g_timeout_add_once (NEEDS_ATTENTION_ANIMATION_TIMEOUT,
-                            (GSourceOnceFunc) on_remove_operations_button_attention_style_timeout,
-                            self);
+    self->operations_button_attention_timeout_id = g_timeout_add (NEEDS_ATTENTION_ANIMATION_TIMEOUT,
+                                                                  (GSourceFunc) on_remove_operations_button_attention_style_timeout,
+                                                                  self);
 }
 
 static void
@@ -478,8 +481,6 @@ nautilus_progress_indicator_constructed (GObject *object)
 {
     NautilusProgressIndicator *self = NAUTILUS_PROGRESS_INDICATOR (object);
 
-    G_OBJECT_CLASS (nautilus_progress_indicator_parent_class)->constructed (object);
-
     self->progress_manager = nautilus_progress_info_manager_dup_singleton ();
     g_signal_connect_object (self->progress_manager, "new-progress-info",
                              G_CALLBACK (on_new_progress_info), self,
@@ -548,7 +549,7 @@ nautilus_progress_indicator_class_init (NautilusProgressIndicatorClass *klass)
     object_class->set_property = nautilus_progress_indicator_set_property;
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-progress-indicator.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-progress-indicator.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusProgressIndicator, operations_button);
     gtk_widget_class_bind_template_child (widget_class, NautilusProgressIndicator, operations_popover);
     gtk_widget_class_bind_template_child (widget_class, NautilusProgressIndicator, operations_list);

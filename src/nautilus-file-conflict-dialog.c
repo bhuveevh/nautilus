@@ -1,12 +1,22 @@
-/*
- * nautilus-file-conflict-dialog: dialog that handles file conflicts
- * during transfer operations.
+/* nautilus-file-conflict-dialog: dialog that handles file conflicts
+ *  during transfer operations.
  *
- * SPDX-FileCopyrightText: 2008-2010 Cosimo Cecchi
+ *  Copyright (C) 2008-2010 Cosimo Cecchi
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.
  *
- * Authors: Cosimo Cecchi <cosimoc@gnome.org>
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public
+ *  License along with this program; if not, see <http://www.gnu.org/licenses/>.
+ *
+ *  Authors: Cosimo Cecchi <cosimoc@gnome.org>
  */
 
 #include <config.h>
@@ -15,11 +25,12 @@
 #include <string.h>
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <glib/gi18n.h>
 #include <pango/pango.h>
 
 #include "nautilus-file.h"
-#include <nautilus-image.h>
 #include "nautilus-filename-utilities.h"
+#include "nautilus-icon-info.h"
 #include "nautilus-operations-ui-manager.h"
 
 struct _NautilusFileConflictDialog
@@ -30,7 +41,6 @@ struct _NautilusFileConflictDialog
     gchar *suggested_name;
 
     ConflictResponse response;
-    gint activation_timeout_id;
 
     /* UI objects */
     GtkWidget *primary_label;
@@ -44,11 +54,11 @@ struct _NautilusFileConflictDialog
     GtkWidget *skip_button;
     GtkWidget *rename_button;
     GtkWidget *replace_button;
-    NautilusImage *dest_icon;
-    NautilusImage *src_icon;
+    GtkWidget *dest_icon;
+    GtkWidget *src_icon;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusFileConflictDialog, nautilus_file_conflict_dialog, ADW_TYPE_WINDOW);
+G_DEFINE_TYPE (NautilusFileConflictDialog, nautilus_file_conflict_dialog, ADW_TYPE_WINDOW);
 
 void
 nautilus_file_conflict_dialog_set_text (NautilusFileConflictDialog *fcd,
@@ -61,32 +71,11 @@ nautilus_file_conflict_dialog_set_text (NautilusFileConflictDialog *fcd,
 
 void
 nautilus_file_conflict_dialog_set_images (NautilusFileConflictDialog *fcd,
-                                          NautilusFile               *destination_file,
-                                          NautilusFile               *source_file)
+                                          GdkPaintable               *destination_paintable,
+                                          GdkPaintable               *source_paintable)
 {
-    int scale = gtk_widget_get_scale_factor (GTK_WIDGET (fcd));
-    g_autoptr (GFile) dest_location = nautilus_file_get_location (destination_file);
-    g_autoptr (GFile) src_location = nautilus_file_get_location (source_file);
-    g_autoptr (GdkPaintable) destination_paintable
-        = nautilus_file_get_icon_paintable (destination_file,
-                                            NAUTILUS_GRID_ICON_SIZE_SMALL,
-                                            scale,
-                                            NAUTILUS_FILE_ICON_FLAGS_NONE);
-    g_autoptr (GdkPaintable) source_paintable
-        = nautilus_file_get_icon_paintable (source_file,
-                                            NAUTILUS_GRID_ICON_SIZE_SMALL,
-                                            scale,
-                                            NAUTILUS_FILE_ICON_FLAGS_NONE);
-    gboolean show_dest_thumbnail = nautilus_file_should_show_thumbnail (destination_file);
-    gboolean show_src_thumbnail = nautilus_file_should_show_thumbnail (source_file);
-
-    nautilus_image_set_fallback (fcd->dest_icon, destination_paintable);
-    nautilus_image_set_source (fcd->dest_icon, NULL);
-    nautilus_image_set_source (fcd->dest_icon, show_dest_thumbnail ? dest_location : NULL);
-
-    nautilus_image_set_fallback (fcd->src_icon, source_paintable);
-    nautilus_image_set_source (fcd->src_icon, NULL);
-    nautilus_image_set_source (fcd->src_icon, show_src_thumbnail ? src_location : NULL);
+    gtk_picture_set_paintable (GTK_PICTURE (fcd->dest_icon), destination_paintable);
+    gtk_picture_set_paintable (GTK_PICTURE (fcd->src_icon), source_paintable);
 }
 
 void
@@ -270,7 +259,6 @@ do_finalize (GObject *self)
 
     g_free (dialog->conflict_name);
     g_free (dialog->suggested_name);
-    g_clear_handle_id (&dialog->activation_timeout_id, g_source_remove);
 
     G_OBJECT_CLASS (nautilus_file_conflict_dialog_parent_class)->finalize (self);
 }
@@ -280,7 +268,7 @@ nautilus_file_conflict_dialog_class_init (NautilusFileConflictDialogClass *klass
 {
     GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-file-conflict-dialog.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-file-conflict-dialog.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusFileConflictDialog, primary_label);
     gtk_widget_class_bind_template_child (widget_class, NautilusFileConflictDialog, secondary_label);
     gtk_widget_class_bind_template_child (widget_class, NautilusFileConflictDialog, dest_label);
@@ -307,7 +295,7 @@ nautilus_file_conflict_dialog_class_init (NautilusFileConflictDialogClass *klass
     G_OBJECT_CLASS (klass)->finalize = do_finalize;
 }
 
-static void
+static gboolean
 activate_buttons (NautilusFileConflictDialog *fcd)
 {
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->cancel_button), TRUE);
@@ -315,6 +303,7 @@ activate_buttons (NautilusFileConflictDialog *fcd)
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->rename_button), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->replace_button), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->expander), TRUE);
+    return G_SOURCE_REMOVE;
 }
 
 void
@@ -326,9 +315,9 @@ nautilus_file_conflict_dialog_delay_buttons_activation (NautilusFileConflictDial
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->replace_button), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (fcd->expander), FALSE);
 
-    fcd->activation_timeout_id = g_timeout_add_seconds_once (BUTTON_ACTIVATION_DELAY_IN_SECONDS,
-                                                             (GSourceOnceFunc) activate_buttons,
-                                                             fcd);
+    g_timeout_add_seconds (BUTTON_ACTIVATION_DELAY_IN_SECONDS,
+                           G_SOURCE_FUNC (activate_buttons),
+                           fcd);
 }
 
 char *

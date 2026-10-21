@@ -1,20 +1,38 @@
 /*
- * SPDX-FileCopyrightText: 2011, Red Hat, Inc.
+ * Nautilus
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * Copyright (C) 2011, Red Hat, Inc.
+ *
+ * Nautilus is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * Nautilus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Cosimo Cecchi <cosimoc@redhat.com>
+ *
  */
 
 #include "nautilus-toolbar.h"
 
+#include <glib/gi18n.h>
+#include <math.h>
 
 #include "nautilus-application.h"
+#include "nautilus-bookmark.h"
 #include "nautilus-global-preferences.h"
 #include "nautilus-history-controls.h"
 #include "nautilus-location-entry.h"
 #include "nautilus-pathbar.h"
 #include "nautilus-view-controls.h"
+#include "nautilus-ui-utilities.h"
 #include "nautilus-window-slot.h"
 
 struct _NautilusToolbar
@@ -62,7 +80,7 @@ enum
 
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 
-G_DEFINE_FINAL_TYPE (NautilusToolbar, nautilus_toolbar, ADW_TYPE_BIN);
+G_DEFINE_TYPE (NautilusToolbar, nautilus_toolbar, ADW_TYPE_BIN);
 
 static void nautilus_toolbar_set_window_slot_real (NautilusToolbar    *self,
                                                    NautilusWindowSlot *slot);
@@ -477,7 +495,7 @@ nautilus_toolbar_class_init (NautilusToolbarClass *klass)
     g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-toolbar.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-toolbar.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusToolbar, history_controls_stack);
     gtk_widget_class_bind_template_child (widget_class, NautilusToolbar, history_controls);

@@ -1,6 +1,6 @@
 /*
- * SPDX-FileCopyrightText: 2015 Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
- * SPDX-FileCopyrightText: 2022 António Fernandes <antoniof@gnome.org>
+ * Copyright (C) 2015 Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
+ * Copyright (C) 2022 António Fernandes <antoniof@gnome.org>
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -28,7 +28,7 @@ struct _NautilusNetworkAddressBar
     GCancellable *cancellable;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusNetworkAddressBar, nautilus_network_address_bar, GTK_TYPE_BOX)
+G_DEFINE_TYPE (NautilusNetworkAddressBar, nautilus_network_address_bar, GTK_TYPE_BOX)
 
 const char *unsupported_protocols[] =
 {
@@ -387,7 +387,7 @@ nautilus_network_address_bar_class_init (NautilusNetworkAddressBarClass *klass)
     widget_class->map = nautilus_network_address_bar_map;
 
     /* Bind class to template */
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-network-address-bar.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-network-address-bar.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusNetworkAddressBar, address_entry);
     gtk_widget_class_bind_template_child (widget_class, NautilusNetworkAddressBar, connect_button);

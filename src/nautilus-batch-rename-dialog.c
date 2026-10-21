@@ -1,8 +1,20 @@
-/*
- * SPDX-FileCopyrightText: 2016 Alexandru Pandelea <alexandru.pandelea@gmail.com>
- * SPDX-FileCopyrightText: 2024–2025 Markus Göllnitz <camelcasenick@bewares.it>
+/* nautilus-batch-rename-dialog.c
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * Copyright (C) 2016 Alexandru Pandelea <alexandru.pandelea@gmail.com>
+ * Copyright (C) 2024–2025 Markus Göllnitz <camelcasenick@bewares.it>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <config.h>
@@ -11,8 +23,10 @@
 #include "nautilus-batch-rename-item.h"
 #include "nautilus-directory.h"
 #include "nautilus-file.h"
+#include "nautilus-error-reporting.h"
 #include "nautilus-batch-rename-utilities.h"
 
+#include <glib/gprintf.h>
 #include <glib.h>
 #include <string.h>
 #include <glib/gi18n.h>
@@ -89,7 +103,7 @@ typedef struct
 static void     update_display_text (NautilusBatchRenameDialog *dialog);
 static void     cancel_conflict_check (NautilusBatchRenameDialog *self);
 
-G_DEFINE_FINAL_TYPE (NautilusBatchRenameDialog, nautilus_batch_rename_dialog, ADW_TYPE_DIALOG);
+G_DEFINE_TYPE (NautilusBatchRenameDialog, nautilus_batch_rename_dialog, ADW_TYPE_DIALOG);
 
 static void
 change_numbering_order (GSimpleAction *action,
@@ -305,7 +319,7 @@ split_entry_text (NautilusBatchRenameDialog *self,
         normal_text = g_string_new (substring);
         g_free (substring);
 
-        if (g_strcmp0 (normal_text->str, "") != 0)
+        if (g_strcmp0 (normal_text->str, ""))
         {
             result = g_list_prepend (result, normal_text);
         }
@@ -868,7 +882,8 @@ file_names_list_has_duplicates_async (NautilusBatchRenameDialog *self)
     for (l = self->distinct_parent_directories; l != NULL; l = l->next)
     {
         nautilus_directory_call_when_ready (l->data,
-                                            NAUTILUS_ATTRIBUTE_INFO | NAUTILUS_ATTRIBUTE_FILE_LIST,
+                                            NAUTILUS_FILE_ATTRIBUTE_INFO,
+                                            TRUE,
                                             on_directory_attributes_ready_for_conflicts_check,
                                             self);
     }
@@ -1492,7 +1507,7 @@ nautilus_batch_rename_dialog_class_init (NautilusBatchRenameDialogClass *klass)
 
     g_type_ensure (NAUTILUS_TYPE_BATCH_RENAME_ITEM);
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-batch-rename-dialog.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-batch-rename-dialog.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusBatchRenameDialog, toolbar_view);
     gtk_widget_class_bind_template_child (widget_class, NautilusBatchRenameDialog, batch_listview);
@@ -1665,9 +1680,9 @@ nautilus_batch_rename_dialog_init (NautilusBatchRenameDialog *self)
     self->row_height = -1;
 
     g_signal_connect_object (gtk_editable_get_delegate (GTK_EDITABLE (self->name_entry)),
-                             "delete-text", G_CALLBACK (on_delete_text), self, G_CONNECT_DEFAULT);
+                             "delete-text", G_CALLBACK (on_delete_text), self, 0);
     g_signal_connect_object (gtk_editable_get_delegate (GTK_EDITABLE (self->name_entry)),
-                             "insert-text", G_CALLBACK (on_insert_text), self, G_CONNECT_DEFAULT);
+                             "insert-text", G_CALLBACK (on_insert_text), self, 0);
 
     self->metadata_cancellable = g_cancellable_new ();
 }

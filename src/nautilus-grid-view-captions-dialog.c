@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2026 Khalid Abu Shawarib <kas@gnome.org>
+ * Copyright © 2026 Khalid Abu Shawarib <kas@gnome.org>
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -12,6 +12,7 @@
 #include <nautilus-column-utilities.h>
 #include <nautilus-extension.h>
 #include <nautilus-global-preferences.h>
+#include <nautilus-types.h>
 
 struct _NautilusGridViewCaptionsDialog
 {
@@ -169,7 +170,7 @@ nautilus_preferences_dialog_setup_icon_caption_page (GPtrArray *combo_rows)
 
         g_signal_connect_data (combo_row, "notify::selected",
                                G_CALLBACK (captions_changed_callback), g_ptr_array_ref (combo_rows),
-                               (GClosureNotify) g_ptr_array_unref, G_CONNECT_DEFAULT);
+                               (GClosureNotify) g_ptr_array_unref, 0);
     }
 
     nautilus_column_list_free (columns);
@@ -195,7 +196,7 @@ nautilus_grid_view_captions_dialog_class_init (NautilusGridViewCaptionsDialogCla
 
     object_class->dispose = nautilus_grid_view_captions_dialog_dispose;
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-grid-view-captions-dialog.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-grid-view-captions-dialog.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusGridViewCaptionsDialog, captions_0_comborow);
     gtk_widget_class_bind_template_child (widget_class, NautilusGridViewCaptionsDialog, captions_1_comborow);
     gtk_widget_class_bind_template_child (widget_class, NautilusGridViewCaptionsDialog, captions_2_comborow);

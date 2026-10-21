@@ -196,7 +196,6 @@
 .nautilus-list-view columnview > listview {
   margin-left: -24px;
   margin-right: -24px;
-  min-width: 48px;
 }
 .nautilus-list-view columnview > listview > row {
   margin-left: 24px;
@@ -291,11 +290,12 @@ placesview list {
   padding: 2px;
 }
 
-.nautilus-image {
+.view .nautilus-image {
   filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.3));
 }
 
-.nautilus-image.file-thumbnail {
+.view .thumbnail,
+.nautilus-properties .thumbnail {
   background: url('/org/gnome/nautilus/image/checkerboard.png') repeat;
   border-radius: 2px;
   /* Draw a shin and outline to meld better with full-color icons */
@@ -388,4 +388,67 @@ rubberband {
 
 .toolbar.no-bottom-padding {
   padding-bottom: 0px;
+}
+
+/* ==========================================================================
+ * Windows Explorer look
+ * ==========================================================================
+ * These rules only restyle the chrome that the Blueprint UI now arranges like
+ * Windows Explorer (classic menu bar, command bar, squarer address bar). No
+ * behaviour or action is changed: every command is still a stock GNOME action
+ * and every keyboard shortcut and context menu keeps working.
+ */
+
+/* Classic menu bar (File / Edit / View / Go / Help): flat and light, with a
+ * separator along the bottom. */
+menubar {
+  background-color: @headerbar_bg_color;
+  border-bottom: 1px solid var(--border-color);
+  min-height: 30px;
+  padding: 0 6px;
+}
+
+menubar > item {
+  padding: 3px 10px;
+  border-radius: 4px;
+}
+
+menubar > item:hover {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+menubar > item:selected {
+  background-color: var(--accent-bg-color);
+}
+
+/* Windows-style command bar (New / Cut / Copy / Paste / Rename / Delete /
+ * Properties) sitting under the menu bar. */
+.command-bar {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: @headerbar_bg_color;
+}
+
+.command-bar > button {
+  border-radius: 4px;
+  padding: 4px 10px;
+  box-shadow: none;
+}
+
+.command-bar > button:hover {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 20%, transparent);
+}
+
+.command-bar > button:active,
+.command-bar > button:checked {
+  background-color: color-mix(in srgb, var(--accent-bg-color) 35%, transparent);
+}
+
+/* Explorer-style address bar: a flat rectangle rather than the GNOME pill. */
+.nautilus-pathbar {
+  border-radius: 4px;
+}
+
+.nautilus-path-button {
+  border-radius: 3px;
 }

@@ -1,7 +1,19 @@
-/*
- * SPDX-FileCopyrightText: 2015 Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
+/* nautilus-search-popover.c
  *
- * SPDX-License-Identifier: GPL-3.0-or-later
+ * Copyright (C) 2015 Georges Basile Stavracas Neto <georges.stavracas@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <gtk/gtk.h>
@@ -9,14 +21,18 @@
 
 #include "nautilus-date-range-dialog.h"
 #include "nautilus-date-utilities.h"
+#include "nautilus-enum-types.h"
 #include "nautilus-enums.h"
 #include "nautilus-search-popover.h"
 #include "nautilus-mime-actions.h"
 
 #include <glib/gi18n.h>
+#include "nautilus-file.h"
 #include "nautilus-global-preferences.h"
 #include "nautilus-icon-info.h"
 #include "nautilus-minimal-cell.h"
+#include "nautilus-query.h"
+#include "nautilus-ui-utilities.h"
 
  #define SEARCH_FILTER_MAX_YEARS 5
 
@@ -75,7 +91,7 @@ struct _NautilusSearchPopover
 
 static void          show_other_types_dialog (NautilusSearchPopover *popover);
 
-G_DEFINE_FINAL_TYPE (NautilusSearchPopover, nautilus_search_popover, GTK_TYPE_POPOVER)
+G_DEFINE_TYPE (NautilusSearchPopover, nautilus_search_popover, GTK_TYPE_POPOVER)
 
 enum
 {
@@ -413,7 +429,8 @@ show_other_types_dialog (NautilusSearchPopover *popover)
         g_autofree gchar *content_type = l->data;
         g_autofree gchar *description = g_content_type_get_description (content_type);
         g_autoptr (GIcon) icon = g_content_type_get_icon (content_type);
-        GdkPaintable *paintable = nautilus_icon_info_lookup (icon, 32, scale);
+        g_autoptr (NautilusIconInfo) icon_info = nautilus_icon_info_lookup (icon, 32, scale);
+        GdkPaintable *paintable = nautilus_icon_info_get_paintable (icon_info);
 
         g_list_store_append (file_type_list, nautilus_minimal_cell_new (description,
                                                                         content_type,
@@ -427,7 +444,7 @@ show_other_types_dialog (NautilusSearchPopover *popover)
     filter_model = gtk_filter_list_model_new (G_LIST_MODEL (file_type_list), GTK_FILTER (filter));
     popover->other_types_model = gtk_single_selection_new (G_LIST_MODEL (filter_model));
 
-    builder = gtk_builder_new_from_resource ("/org/gnome/nautilus/ui/nautilus-search-types-dialog.ui");
+    builder = gtk_builder_new_from_resource ("/io/github/bhuveevh/opentiafiles/ui/nautilus-search-types-dialog.ui");
 
     popover->type_dialog = ADW_DIALOG (gtk_builder_get_object (builder, "file_types_dialog"));
     search_entry = GTK_WIDGET (gtk_builder_get_object (builder, "search_entry"));
@@ -535,7 +552,7 @@ nautilus_search_popover_class_init (NautilusSearchPopoverClass *klass)
                                        1,
                                        G_TYPE_INT);
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-search-popover.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-search-popover.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusSearchPopover, type_wrap_box);
     gtk_widget_class_bind_template_child (widget_class, NautilusSearchPopover, audio_button);
@@ -691,9 +708,7 @@ nautilus_search_popover_init (NautilusSearchPopover *self)
     g_autoptr (GSimpleAction) action = g_simple_action_new_stateful (
         "time-type-changed", G_VARIANT_TYPE_STRING, g_variant_new_string (time_type_str));
     g_simple_action_set_enabled (action, TRUE);
-    g_signal_connect_object (action, "change-state",
-                             G_CALLBACK (time_type_changed), self,
-                             G_CONNECT_DEFAULT);
+    g_signal_connect_object (action, "change-state", G_CALLBACK (time_type_changed), self, 0);
 
     GSimpleActionGroup *action_group = g_simple_action_group_new ();
     g_action_map_add_action (G_ACTION_MAP (action_group), G_ACTION (action));

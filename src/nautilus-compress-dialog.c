@@ -1,11 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2023 The GNOME project contributors
+ * Copyright (C) 2023 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #include <adwaita.h>
 #include <glib/gi18n.h>
+#include <gnome-autoar/gnome-autoar.h>
 
 #include "nautilus-compress-dialog.h"
 
@@ -28,7 +29,7 @@ struct _NautilusCompressDialog
     gpointer callback_data;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusCompressDialog, nautilus_compress_dialog, ADW_TYPE_DIALOG);
+G_DEFINE_TYPE (NautilusCompressDialog, nautilus_compress_dialog, ADW_TYPE_DIALOG);
 
 #define NAUTILUS_TYPE_COMPRESS_ITEM (nautilus_compress_item_get_type ())
 G_DECLARE_FINAL_TYPE (NautilusCompressItem, nautilus_compress_item, NAUTILUS, COMPRESS_ITEM, GObject)
@@ -42,7 +43,7 @@ struct _NautilusCompressItem
     char *description;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusCompressItem, nautilus_compress_item, G_TYPE_OBJECT);
+G_DEFINE_TYPE (NautilusCompressItem, nautilus_compress_item, G_TYPE_OBJECT);
 
 static void
 nautilus_compress_item_init (NautilusCompressItem *item)
@@ -164,7 +165,7 @@ extension_combo_row_setup_item_full (GtkSignalListItemFactory *factory,
 
     subtitle = gtk_label_new ("");
     gtk_label_set_xalign (GTK_LABEL (subtitle), 0.0);
-    gtk_widget_add_css_class (subtitle, "dimmed");
+    gtk_widget_add_css_class (subtitle, "dim-label");
     gtk_widget_add_css_class (subtitle, "caption");
 
     checkmark = gtk_image_new_from_icon_name ("object-select-symbolic");
@@ -274,11 +275,11 @@ extension_combo_row_setup (NautilusCompressDialog *self)
 
     list_factory = gtk_signal_list_item_factory_new ();
     g_signal_connect_object (list_factory, "setup",
-                             G_CALLBACK (extension_combo_row_setup_item_full), self, G_CONNECT_DEFAULT);
+                             G_CALLBACK (extension_combo_row_setup_item_full), self, 0);
     g_signal_connect_object (list_factory, "bind",
-                             G_CALLBACK (extension_combo_row_bind), self, G_CONNECT_DEFAULT);
+                             G_CALLBACK (extension_combo_row_bind), self, 0);
     g_signal_connect_object (list_factory, "unbind",
-                             G_CALLBACK (extension_combo_row_unbind), self, G_CONNECT_DEFAULT);
+                             G_CALLBACK (extension_combo_row_unbind), self, 0);
 
     expression = gtk_cclosure_expression_new (G_TYPE_STRING, NULL, 0, 0,
                                               G_CALLBACK (nautilus_compress_item_dup_title),
@@ -426,7 +427,7 @@ nautilus_compress_dialog_class_init (NautilusCompressDialogClass *klass)
     object_class->dispose = nautilus_compress_dialog_dispose;
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-compress-dialog.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-compress-dialog.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusCompressDialog, extension_combo_row);
     gtk_widget_class_bind_template_child (widget_class, NautilusCompressDialog, name_entry);

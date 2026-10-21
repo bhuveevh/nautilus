@@ -1,10 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2002 Jan Arne Petersen
- * SPDX-FileCopyrightText: 2016 Carlos Soriano <csoriano@gnome.com>
+/* nautilus-preferences-window.c - Functions to create and show the nautilus
+ *  preference window.
  *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ *  Copyright (C) 2002 Jan Arne Petersen
+ *  Copyright (C) 2016 Carlos Soriano <csoriano@gnome.com>
  *
- * Authors: Jan Arne Petersen <jpetersen@uni-bonn.de>
+ *  The Gnome Library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.
+ *
+ *  The Gnome Library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with the Gnome Library; see the file COPYING.LIB.  If not,
+ *  see <http://www.gnu.org/licenses/>.
+ *
+ *  Authors: Jan Arne Petersen <jpetersen@uni-bonn.de>
  */
 
 #include <config.h>
@@ -13,7 +27,9 @@
 
 #include <adwaita.h>
 #include <glib/gi18n.h>
+#include <nautilus-extension.h>
 
+#include "nautilus-column-utilities.h"
 #include "nautilus-date-utilities.h"
 #include "nautilus-global-preferences.h"
 
@@ -27,11 +43,9 @@
 #define NAUTILUS_PREFERENCES_DIALOG_LIST_VIEW_USE_TREE_WIDGET                  \
         "use_tree_view_row"
 
-/* toggle group preferences */
-#define NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_TOGGLE_GROUP                   \
-        "open_action_toggle_group"
-
 /* combo preferences */
+#define NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO                          \
+        "open_action_row"
 #define NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW                       \
         "search_recursive_row"
 #define NAUTILUS_PREFERENCES_DIALOG_THUMBNAILS_ROW                       \
@@ -44,6 +58,8 @@ static const char * const speed_tradeoff_values[] =
     "local-only", "always", "never",
     NULL
 };
+
+static const char * const click_behavior_values[] = {"single", "double", NULL};
 
 static void
 bind_builder_bool (GtkBuilder *builder,
@@ -144,21 +160,10 @@ setup_combo (GtkBuilder  *builder,
 }
 
 static void
-bind_builder_toggle_group (GtkBuilder *builder,
-                           GSettings  *settings,
-                           const char *prefs,
-                           const char *group_name)
-{
-    AdwToggleGroup *group = ADW_TOGGLE_GROUP (gtk_builder_get_object (builder, group_name));
-
-    g_settings_bind (settings, prefs,
-                     G_OBJECT (group), "active-name",
-                     G_SETTINGS_BIND_DEFAULT);
-}
-
-static void
 nautilus_preferences_dialog_setup (GtkBuilder *builder)
 {
+    setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO,
+                 (const char *[]) { _("Single-Click"), _("Double-Click"), NULL });
     setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW,
                  (const char *[]) { _("On This Device Only"), _("All Locations"), _("Never"), NULL });
     setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_THUMBNAILS_ROW,
@@ -182,9 +187,10 @@ nautilus_preferences_dialog_setup (GtkBuilder *builder)
 
     setup_detailed_date (builder);
 
-    bind_builder_toggle_group (builder, nautilus_preferences,
-                               NAUTILUS_PREFERENCES_CLICK_POLICY,
-                               NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_TOGGLE_GROUP);
+    bind_builder_combo_row (builder, nautilus_preferences,
+                            NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO,
+                            NAUTILUS_PREFERENCES_CLICK_POLICY,
+                            (const char **) click_behavior_values);
     bind_builder_combo_row (builder, nautilus_preferences,
                             NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW,
                             NAUTILUS_PREFERENCES_RECURSIVE_SEARCH,
@@ -215,7 +221,7 @@ nautilus_preferences_dialog_show (GtkWidget *parent)
         g_clear_weak_pointer (&preferences_dialog);
     }
 
-    builder = gtk_builder_new_from_resource ("/org/gnome/nautilus/ui/nautilus-preferences-dialog.ui");
+    builder = gtk_builder_new_from_resource ("/io/github/bhuveevh/opentiafiles/ui/nautilus-preferences-dialog.ui");
     nautilus_preferences_dialog_setup (builder);
 
     preferences_dialog = ADW_PREFERENCES_DIALOG (gtk_builder_get_object (builder, "preferences_dialog"));

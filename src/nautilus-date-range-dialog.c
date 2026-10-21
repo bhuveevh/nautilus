@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2025 The GNOME project contributors
+ * Copyright (C) 2025 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
@@ -27,7 +27,7 @@ struct _NautilusDateRangeDialog
     GtkButton *select_button;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusDateRangeDialog, nautilus_date_range_dialog, ADW_TYPE_DIALOG);
+G_DEFINE_TYPE (NautilusDateRangeDialog, nautilus_date_range_dialog, ADW_TYPE_DIALOG);
 
 enum
 {
@@ -218,7 +218,7 @@ nautilus_date_range_dialog_class_init (NautilusDateRangeDialogClass *klass)
                                         G_TYPE_NONE, 1, G_TYPE_POINTER);
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-date-range-dialog.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-date-range-dialog.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusDateRangeDialog, date_range_row);
     gtk_widget_class_bind_template_child (widget_class, NautilusDateRangeDialog, single_date_row);

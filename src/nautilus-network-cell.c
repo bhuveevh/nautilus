@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2024 The GNOME project contributors
+ * Copyright (C) 2024 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -10,6 +10,7 @@
 
 #include "nautilus-directory.h"
 #include "nautilus-file.h"
+#include "nautilus-file-utilities.h"
 #include "nautilus-scheme.h"
 #include "nautilus-view-item.h"
 
@@ -25,7 +26,7 @@ struct _NautilusNetworkCell
     GtkWidget *unmount_button;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusNetworkCell, nautilus_network_cell, NAUTILUS_TYPE_VIEW_CELL)
+G_DEFINE_TYPE (NautilusNetworkCell, nautilus_network_cell, NAUTILUS_TYPE_VIEW_CELL)
 
 static void
 update_labels (NautilusNetworkCell *self)
@@ -130,7 +131,7 @@ nautilus_network_cell_class_init (NautilusNetworkCellClass *klass)
     object_class->dispose = nautilus_network_cell_dispose;
     object_class->finalize = nautilus_network_cell_finalize;
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-network-cell.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-network-cell.ui");
 
     /* Needs to add the direct child of the template widget to dispose it since
      * a plain GtkWidget doesn't dispose it's child automatically. */
