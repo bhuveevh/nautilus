@@ -55,7 +55,9 @@ Maintainer: Bhuvee Paswan <bhuveepaswan@gmail.com>
 Installed-Size: $SIZE
 Section: gnome
 Priority: optional
-Provides: nautilus (= $VER)
+Provides: nautilus
+Conflicts: nautilus, nautilus-data
+Replaces: nautilus, nautilus-data, libnautilus-extension4, gir1.2-nautilus-4.1, libnautilus-extension-dev
 Depends: $DEPS
 Description: OpentiaFiles - file manager with a Windows Explorer look
  OpentiaFiles is a fork of GNOME Files (Nautilus) whose chrome is arranged
@@ -64,6 +66,8 @@ Description: OpentiaFiles - file manager with a Windows Explorer look
  command bar and a squarer address bar. It registers itself as a handler
  for inode/directory and as the org.freedesktop.FileManager1 provider, so
  it can be used as the default file manager and in "Open With".
+ .
+ It replaces the distribution's Files (nautilus) package, which it Provides.
 EOF
 
 echo "==> Writing maintainer scripts"
