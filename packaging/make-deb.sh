@@ -76,6 +76,6 @@ EOF
 chmod 0755 pkgroot/DEBIAN/prerm
 
 echo "==> Building the .deb"
-OUT="$PKG\_$VER\_$ARCH.deb"
+OUT="${PKG}_${VER}_${ARCH}.deb"
 dpkg-deb --build --root-owner-group pkgroot "$OUT"
 ls -lh "$OUT"
