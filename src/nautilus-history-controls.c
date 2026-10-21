@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2022 The GNOME project contributors
+ * Copyright (C) 2022 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
@@ -8,7 +8,6 @@
 
 #include "nautilus-bookmark.h"
 #include "nautilus-window.h"
-#include "nautilus-window-slot.h"
 
 struct _NautilusHistoryControls
 {
@@ -39,14 +38,14 @@ fill_menu (NautilusHistoryControls *self,
            GMenu                   *menu,
            gboolean                 back)
 {
-    int step = back ? -1 : 1;
-    int index = step;
+    guint index;
     GList *list;
     const gchar *name;
 
     list = back ? nautilus_window_slot_get_back_history (self->window_slot) :
                   nautilus_window_slot_get_forward_history (self->window_slot);
 
+    index = 0;
     while (list != NULL)
     {
         g_autoptr (GMenuItem) item = NULL;
@@ -55,11 +54,11 @@ fill_menu (NautilusHistoryControls *self,
         item = g_menu_item_new (name, NULL);
         g_menu_item_set_action_and_target (item,
                                            back ? "slot.back-n" : "slot.forward-n",
-                                           "i", index);
+                                           "u", index);
         g_menu_append_item (menu, item);
 
         list = g_list_next (list);
-        index += step;
+        ++index;
     }
 }
 
@@ -67,24 +66,36 @@ static void
 show_menu (NautilusHistoryControls *self,
            GtkWidget               *widget)
 {
-    int direction = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget),
-                                                        "nav-direction"));
-    g_autoptr (GMenu) menu = g_menu_new ();
+    g_autoptr (GMenu) menu = NULL;
+    NautilusNavigationDirection direction;
     GtkPopoverMenu *popover;
 
-    if (direction == NAUTILUS_NAVIGATION_DIRECTION_FORWARD)
+    menu = g_menu_new ();
+
+    direction = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (widget),
+                                                     "nav-direction"));
+
+    switch (direction)
     {
-        fill_menu (self, menu, FALSE);
-        popover = GTK_POPOVER_MENU (self->forward_menu);
-    }
-    else if (direction == NAUTILUS_NAVIGATION_DIRECTION_BACK)
-    {
-        fill_menu (self, menu, TRUE);
-        popover = GTK_POPOVER_MENU (self->back_menu);
-    }
-    else
-    {
-        g_return_if_reached ();
+        case NAUTILUS_NAVIGATION_DIRECTION_FORWARD:
+        {
+            fill_menu (self, menu, FALSE);
+            popover = GTK_POPOVER_MENU (self->forward_menu);
+        }
+        break;
+
+        case NAUTILUS_NAVIGATION_DIRECTION_BACK:
+        {
+            fill_menu (self, menu, TRUE);
+            popover = GTK_POPOVER_MENU (self->back_menu);
+        }
+        break;
+
+        default:
+        {
+            g_assert_not_reached ();
+        }
+        break;
     }
 
     gtk_popover_menu_set_menu_model (popover, G_MENU_MODEL (menu));
@@ -111,6 +122,7 @@ navigation_button_press_cb (GtkGestureClick *gesture,
     }
     else if (button == GDK_BUTTON_MIDDLE)
     {
+        NautilusNavigationDirection direction;
         GtkRoot *window = gtk_widget_get_root (GTK_WIDGET (self));
 
         if (!NAUTILUS_IS_WINDOW (window))
@@ -120,8 +132,8 @@ navigation_button_press_cb (GtkGestureClick *gesture,
             return;
         }
 
-        int direction = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (widget),
-                                                            "nav-direction"));
+        direction = GPOINTER_TO_UINT (g_object_get_data (G_OBJECT (widget),
+                                                         "nav-direction"));
 
         nautilus_window_back_or_forward_in_new_tab (NAUTILUS_WINDOW (window), direction);
     }
@@ -159,8 +171,6 @@ nautilus_history_controls_contructed (GObject *object)
 {
     NautilusHistoryControls *self;
     GtkEventController *controller;
-
-    G_OBJECT_CLASS (nautilus_history_controls_parent_class)->constructed (object);
 
     self = NAUTILUS_HISTORY_CONTROLS (object);
 
@@ -290,7 +300,7 @@ nautilus_history_controls_class_init (NautilusHistoryControlsClass *klass)
     g_object_class_install_properties (object_class, N_PROPS, properties);
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-history-controls.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-history-controls.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusHistoryControls, back_button);
     gtk_widget_class_bind_template_child (widget_class, NautilusHistoryControls, back_menu);
     gtk_widget_class_bind_template_child (widget_class, NautilusHistoryControls, forward_button);

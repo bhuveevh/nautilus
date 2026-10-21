@@ -1,15 +1,11 @@
-/*
- * SPDX-FileCopyrightText: 2016 The GNOME project contributors
- *
- * SPDX-License-Identifier: GPL-3.0-or-later
- */
-
 #include <glib/gi18n.h>
 
 #include "nautilus-operations-ui-manager.h"
 
 #include "nautilus-file.h"
+#include "nautilus-file-operations.h"
 #include "nautilus-file-conflict-dialog.h"
+#include "nautilus-mime-actions.h"
 #include "nautilus-program-choosing.h"
 
 typedef struct
@@ -227,7 +223,25 @@ set_copy_move_dialog_text (FileConflictDialogData *data)
 static void
 set_images (FileConflictDialogData *data)
 {
-    nautilus_file_conflict_dialog_set_images (data->dialog, data->source, data->destination);
+    GdkPaintable *source_paintable;
+    GdkPaintable *destination_paintable;
+
+    destination_paintable = nautilus_file_get_icon_paintable (data->destination,
+                                                              NAUTILUS_GRID_ICON_SIZE_SMALL,
+                                                              1,
+                                                              NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+
+    source_paintable = nautilus_file_get_icon_paintable (data->source,
+                                                         NAUTILUS_GRID_ICON_SIZE_SMALL,
+                                                         1,
+                                                         NAUTILUS_FILE_ICON_FLAGS_USE_THUMBNAILS);
+
+    nautilus_file_conflict_dialog_set_images (data->dialog,
+                                              destination_paintable,
+                                              source_paintable);
+
+    g_object_unref (destination_paintable);
+    g_object_unref (source_paintable);
 }
 
 static void
@@ -358,6 +372,13 @@ set_replace_button_label (FileConflictDialogData *data)
 }
 
 static void
+file_icons_changed (NautilusFile           *file,
+                    FileConflictDialogData *data)
+{
+    set_images (data);
+}
+
+static void
 copy_move_conflict_on_file_list_ready (GList    *files,
                                        gpointer  user_data)
 {
@@ -391,13 +412,13 @@ copy_move_conflict_on_file_list_ready (GList    *files,
 
     set_replace_button_label (data);
 
-    nautilus_file_monitor_add (data->source, data, NAUTILUS_ATTRIBUTE_INFO);
-    nautilus_file_monitor_add (data->destination, data, NAUTILUS_ATTRIBUTE_INFO);
+    nautilus_file_monitor_add (data->source, data, NAUTILUS_FILE_ATTRIBUTES_FOR_ICON);
+    nautilus_file_monitor_add (data->destination, data, NAUTILUS_FILE_ATTRIBUTES_FOR_ICON);
 
-    data->source_handler_id = g_signal_connect_swapped (data->source, "changed",
-                                                        G_CALLBACK (set_images), data);
-    data->destination_handler_id = g_signal_connect_swapped (data->destination, "changed",
-                                                             G_CALLBACK (set_images), data);
+    data->source_handler_id = g_signal_connect (data->source, "changed",
+                                                G_CALLBACK (file_icons_changed), data);
+    data->destination_handler_id = g_signal_connect (data->destination, "changed",
+                                                     G_CALLBACK (file_icons_changed), data);
 }
 
 static void
@@ -470,8 +491,7 @@ run_file_conflict_dialog (gpointer user_data)
     files = g_list_prepend (files, data->destination_directory_file);
 
     nautilus_file_list_call_when_ready (files,
-                                        NAUTILUS_ATTRIBUTE_INFO |
-                                        NAUTILUS_ATTRIBUTE_DIRECTORY_ITEM_COUNT,
+                                        NAUTILUS_FILE_ATTRIBUTES_FOR_ICON | NAUTILUS_FILE_ATTRIBUTE_DIRECTORY_ITEM_COUNT,
                                         &data->handle,
                                         data->on_file_list_ready,
                                         data);
@@ -542,9 +562,8 @@ on_app_chooser_response (GtkDialog *dialog,
 
     if (application != NULL)
     {
-        nautilus_launch_application (application,
-                                     &(NautilusFileList){ .data = data->file },
-                                     GTK_WIDGET (data->parent_window));
+        GList files = {data->file, NULL, NULL};
+        nautilus_launch_application (application, &files, data->parent_window);
     }
 
     invoke_main_context_completed (user_data);
@@ -605,9 +624,9 @@ typedef struct
 } PassphraseRequestData;
 
 static void
-on_request_passphrase_cb (AdwAlertDialog *dialog,
-                          gchar          *response,
-                          gpointer        user_data)
+on_request_passphrase_cb (AdwMessageDialog *dialog,
+                          gchar            *response,
+                          gpointer          user_data)
 {
     PassphraseRequestData *data = user_data;
 
@@ -627,17 +646,17 @@ run_passphrase_dialog (gpointer user_data)
     g_autoptr (GtkBuilder) builder = NULL;
     GObject *dialog;
 
-    builder = gtk_builder_new_from_resource ("/org/gnome/nautilus/ui/nautilus-operations-ui-manager-request-passphrase.ui");
+    builder = gtk_builder_new_from_resource ("/io/github/bhuveevh/opentiafiles/ui/nautilus-operations-ui-manager-request-passphrase.ui");
     dialog = gtk_builder_get_object (builder, "request_passphrase_dialog");
     data->passphrase_entry = GTK_PASSWORD_ENTRY (gtk_builder_get_object (builder, "entry"));
 
-    adw_alert_dialog_format_body (ADW_ALERT_DIALOG (dialog),
-                                  _("“%s” is password-protected."),
-                                  data->basename);
+    adw_message_dialog_format_body (ADW_MESSAGE_DIALOG (dialog),
+                                    _("“%s” is password-protected."),
+                                    data->basename);
 
     g_signal_connect (dialog, "response", G_CALLBACK (on_request_passphrase_cb), data);
-    adw_dialog_present (ADW_DIALOG (dialog), GTK_WIDGET (data->parent_window));
-    gtk_widget_grab_focus (GTK_WIDGET (data->passphrase_entry));
+    gtk_window_set_transient_for (GTK_WINDOW (dialog), data->parent_window);
+    gtk_window_present (GTK_WINDOW (dialog));
 
     return G_SOURCE_REMOVE;
 }

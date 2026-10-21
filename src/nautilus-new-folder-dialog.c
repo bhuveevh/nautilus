@@ -1,9 +1,10 @@
 /*
- * SPDX-FileCopyrightText: 2023 The GNOME project contributors
+ * Copyright (C) 2023 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#include <glib/gi18n.h>
 
 #include "nautilus-new-folder-dialog.h"
 
@@ -22,7 +23,7 @@ struct _NautilusNewFolderDialog
     gpointer callback_data;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusNewFolderDialog, nautilus_new_folder_dialog, ADW_TYPE_DIALOG)
+G_DEFINE_TYPE (NautilusNewFolderDialog, nautilus_new_folder_dialog, ADW_TYPE_DIALOG)
 
 static void
 on_feedback_changed (NautilusNewFolderDialog *self)
@@ -73,6 +74,8 @@ nautilus_new_folder_dialog_new (GtkWidget         *parent,
 
     adw_dialog_present (ADW_DIALOG (self), parent);
 
+    gtk_widget_grab_focus (self->name_entry);
+
     return self;
 }
 
@@ -107,7 +110,7 @@ nautilus_new_folder_dialog_class_init (NautilusNewFolderDialogClass *klass)
     object_class->finalize = nautilus_new_folder_dialog_finalize;
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-new-folder-dialog.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-new-folder-dialog.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusNewFolderDialog, name_entry);
     gtk_widget_class_bind_template_child (widget_class, NautilusNewFolderDialog, validator);

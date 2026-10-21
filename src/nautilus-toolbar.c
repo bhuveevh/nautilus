@@ -1,21 +1,38 @@
 /*
- * SPDX-FileCopyrightText: 2011, Red Hat, Inc.
+ * Nautilus
  *
- * SPDX-License-Identifier: GPL-2.0-or-later
+ * Copyright (C) 2011, Red Hat, Inc.
+ *
+ * Nautilus is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * Nautilus is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Cosimo Cecchi <cosimoc@redhat.com>
+ *
  */
 
 #include "nautilus-toolbar.h"
 
+#include <glib/gi18n.h>
+#include <math.h>
 
 #include "nautilus-application.h"
+#include "nautilus-bookmark.h"
 #include "nautilus-global-preferences.h"
 #include "nautilus-history-controls.h"
 #include "nautilus-location-entry.h"
 #include "nautilus-pathbar.h"
 #include "nautilus-view-controls.h"
-#include "nautilus-window-slot.h"
+#include "nautilus-ui-utilities.h"
 
 struct _NautilusToolbar
 {
@@ -62,7 +79,7 @@ enum
 
 static GParamSpec *properties[NUM_PROPERTIES] = { NULL, };
 
-G_DEFINE_FINAL_TYPE (NautilusToolbar, nautilus_toolbar, ADW_TYPE_BIN);
+G_DEFINE_TYPE (NautilusToolbar, nautilus_toolbar, ADW_TYPE_BIN);
 
 static void nautilus_toolbar_set_window_slot_real (NautilusToolbar    *self,
                                                    NautilusWindowSlot *slot);
@@ -156,11 +173,11 @@ on_path_bar_open_location (NautilusPathBar   *path_bar,
     if (open_flags & (NAUTILUS_OPEN_FLAG_NEW_WINDOW | NAUTILUS_OPEN_FLAG_NEW_TAB))
     {
         nautilus_application_open_location_full (NAUTILUS_APPLICATION (g_application_get_default ()),
-                                                 location, open_flags, NULL, NULL);
+                                                 location, open_flags, NULL, NULL, NULL, NULL);
     }
     else
     {
-        nautilus_window_slot_open_location_full (self->window_slot, location, NULL);
+        nautilus_window_slot_open_location_full (self->window_slot, location, open_flags, NULL);
     }
 }
 
@@ -200,7 +217,7 @@ on_location_entry_location_changed (NautilusLocationEntry *entry,
     NautilusToolbar *self = NAUTILUS_TOOLBAR (user_data);
 
     nautilus_toolbar_close_location_entry (self);
-    nautilus_window_slot_open_location_full (self->window_slot, location, NULL);
+    nautilus_window_slot_open_location_full (self->window_slot, location, 0, NULL);
 }
 
 static void
@@ -230,7 +247,7 @@ action_prompt_home_location (GtkWidget  *widget,
 {
     NautilusToolbar *self = NAUTILUS_TOOLBAR (widget);
 
-    nautilus_toolbar_open_location_entry (self, "~/");
+    nautilus_toolbar_open_location_entry (self, "~");
 }
 
 static void
@@ -452,7 +469,7 @@ nautilus_toolbar_class_init (NautilusToolbarClass *klass)
     properties [PROP_WINDOW_SLOT] =
         g_param_spec_object ("window-slot",
                              "Window slot currently active",
-                             "Window slot currently active",
+                             "Window slot currently acive",
                              NAUTILUS_TYPE_WINDOW_SLOT,
                              (G_PARAM_READWRITE |
                               G_PARAM_STATIC_STRINGS));
@@ -477,7 +494,7 @@ nautilus_toolbar_class_init (NautilusToolbarClass *klass)
     g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-toolbar.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-toolbar.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusToolbar, history_controls_stack);
     gtk_widget_class_bind_template_child (widget_class, NautilusToolbar, history_controls);

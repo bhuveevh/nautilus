@@ -1,10 +1,23 @@
-/*
- * SPDX-FileCopyrightText: 2004 Novell, Inc.
+/* nautilus-column-chooser.h - A column chooser widget
  *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ *  Copyright (C) 2004 Novell, Inc.
  *
- * Authors: Dave Camp <dave@ximian.com>
- *          Corey Berla <corey@berla.me>
+ *  The Gnome Library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.
+ *
+ *  The Gnome Library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with the Gnome Library; see the column COPYING.LIB.  If not,
+ *  see <http://www.gnu.org/licenses/>.
+ *
+ *  Authors: Dave Camp <dave@ximian.com>
+ *           Corey Berla <corey@berla.me>
  */
 
 #include <config.h>
@@ -16,7 +29,6 @@
 #include <glib/gi18n.h>
 
 #include <nautilus-extension.h>
-#include "nautilus-file.h"
 #include "nautilus-global-preferences.h"
 #include "nautilus-metadata.h"
 
@@ -49,8 +61,6 @@ enum
     NUM_PROPERTIES
 };
 
-static GParamSpec *properties[NUM_PROPERTIES];
-
 enum
 {
     CHANGED,
@@ -58,7 +68,7 @@ enum
 };
 static guint signals[LAST_SIGNAL];
 
-G_DEFINE_FINAL_TYPE (NautilusColumnChooser, nautilus_column_chooser, ADW_TYPE_DIALOG);
+G_DEFINE_TYPE (NautilusColumnChooser, nautilus_column_chooser, ADW_TYPE_DIALOG);
 
 static GStrv
 get_column_names (NautilusColumnChooser *chooser,
@@ -194,6 +204,7 @@ on_row_drag_prepare (GtkDragSource *source,
                      gpointer       user_data)
 {
     GtkWidget *widget = gtk_event_controller_get_widget (GTK_EVENT_CONTROLLER (source));
+    g_autoptr (GdkPaintable) paintable = gtk_widget_paintable_new (widget);
     NautilusColumn *column = user_data;
     NautilusColumnChooser *chooser;
 
@@ -204,18 +215,8 @@ on_row_drag_prepare (GtkDragSource *source,
     }
 
     chooser->drag_column = column;
-
+    gtk_drag_source_set_icon (source, paintable, 0, 0);
     return gdk_content_provider_new_typed (NAUTILUS_TYPE_COLUMN, user_data);
-}
-
-static void
-drag_begin_cb (GtkDragSource *source,
-               GdkDrag       *drag)
-{
-    /* Use a dummy widget so that GTK doesn't automatically use a generic
-     * placeholder icon. */
-    gtk_drag_icon_set_child (GTK_DRAG_ICON (gtk_drag_icon_get_for_drag (drag)),
-                             gtk_box_new (GTK_ORIENTATION_VERTICAL, 0));
 }
 
 static gboolean
@@ -368,7 +369,6 @@ add_list_box_row (GObject  *item,
     controller = GTK_EVENT_CONTROLLER (gtk_drag_source_new ());
     gtk_drag_source_set_actions (GTK_DRAG_SOURCE (controller), GDK_ACTION_MOVE);
     g_signal_connect (controller, "prepare", G_CALLBACK (on_row_drag_prepare), column);
-    g_signal_connect (controller, "drag-begin", G_CALLBACK (drag_begin_cb), NULL);
     g_signal_connect (controller, "drag-cancel", G_CALLBACK (on_row_drag_cancel), chooser);
     gtk_widget_add_controller (row, controller);
 
@@ -523,6 +523,8 @@ nautilus_column_chooser_constructed (GObject *object)
 {
     NautilusColumnChooser *chooser;
     const char *name = NULL;
+    g_auto (GStrv) file_visible_columns = NULL;
+    g_auto (GStrv) file_column_order = NULL;
     gboolean has_custom_columns;
 
     G_OBJECT_CLASS (nautilus_column_chooser_parent_class)->constructed (object);
@@ -534,12 +536,10 @@ nautilus_column_chooser_constructed (GObject *object)
 
     populate_list (chooser);
 
-    const GStrv file_visible_columns =
-        nautilus_file_get_metadata_list (chooser->file,
-                                         NAUTILUS_METADATA_KEY_LIST_VIEW_VISIBLE_COLUMNS);
-    const GStrv file_column_order =
-        nautilus_file_get_metadata_list (chooser->file,
-                                         NAUTILUS_METADATA_KEY_LIST_VIEW_COLUMN_ORDER);
+    file_visible_columns = nautilus_file_get_metadata_list (chooser->file,
+                                                            NAUTILUS_METADATA_KEY_LIST_VIEW_VISIBLE_COLUMNS);
+    file_column_order = nautilus_file_get_metadata_list (chooser->file,
+                                                         NAUTILUS_METADATA_KEY_LIST_VIEW_COLUMN_ORDER);
 
     has_custom_columns = ((file_visible_columns != NULL && file_visible_columns[0] != NULL) ||
                           (file_column_order != NULL && file_column_order[0] != NULL) ||
@@ -586,7 +586,7 @@ nautilus_column_chooser_class_init (NautilusColumnChooserClass *chooser_class)
     oclass->dispose = nautilus_column_chooser_dispose;
     oclass->finalize = nautilus_column_chooser_finalize;
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-column-chooser.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-column-chooser.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusColumnChooser, list_box);
     gtk_widget_class_bind_template_child (widget_class, NautilusColumnChooser, window_title);
     gtk_widget_class_bind_template_child (widget_class, NautilusColumnChooser, banner);
@@ -604,13 +604,12 @@ nautilus_column_chooser_class_init (NautilusColumnChooserClass *chooser_class)
                            G_TYPE_NONE,
                            2, G_TYPE_STRV, G_TYPE_STRV);
 
-    properties[PROP_FILE] =
-        g_param_spec_object ("file", NULL, NULL,
-                             NAUTILUS_TYPE_FILE,
-                             G_PARAM_CONSTRUCT_ONLY |
-                             G_PARAM_WRITABLE);
-
-    g_object_class_install_properties (oclass, G_N_ELEMENTS (properties), properties);
+    g_object_class_install_property (oclass,
+                                     PROP_FILE,
+                                     g_param_spec_object ("file", NULL, NULL,
+                                                          NAUTILUS_TYPE_FILE,
+                                                          G_PARAM_CONSTRUCT_ONLY |
+                                                          G_PARAM_WRITABLE));
 }
 
 static void

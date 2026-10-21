@@ -1,12 +1,12 @@
 /*
- * SPDX-FileCopyrightText: 2024 The GNOME project contributors
+ * Copyright (C) 2024 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 #pragma once
 
-/* Keep values in sync with the org.gnome.nautilus.FolderView schema enums: */
+/* Keep values in sync with the io.github.bhuveevh.opentiafiles.FolderView schema enums: */
 #define NAUTILUS_VIEW_LIST_ID            1
 #define NAUTILUS_VIEW_GRID_ID            2
 /* Special ids, not used by GSettings schemas: */

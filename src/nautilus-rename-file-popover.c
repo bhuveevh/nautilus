@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2023 The GNOME project contributors
+ * Copyright (C) 2023 The GNOME project contributors
  *
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
@@ -35,9 +35,9 @@ struct _NautilusRenameFilePopover
     gulong file_changed_handler_id;
 };
 
-G_DEFINE_FINAL_TYPE (NautilusRenameFilePopover,
-                     nautilus_rename_file_popover,
-                     GTK_TYPE_POPOVER);
+G_DEFINE_TYPE (NautilusRenameFilePopover,
+               nautilus_rename_file_popover,
+               GTK_TYPE_POPOVER);
 
 static void
 disconnect_signal_handlers (NautilusRenameFilePopover *self)
@@ -192,7 +192,10 @@ nautilus_rename_file_popover_show_for_file (NautilusRenameFilePopover *self,
 
     if (!nautilus_file_is_self_owned (self->target_file))
     {
-        containing_directory = nautilus_directory_ref (nautilus_file_get_directory (self->target_file));
+        g_autoptr (NautilusFile) parent = NULL;
+
+        parent = nautilus_file_get_parent (self->target_file);
+        containing_directory = nautilus_directory_get_for_file (parent);
     }
     else
     {
@@ -225,15 +228,7 @@ nautilus_rename_file_popover_show_for_file (NautilusRenameFilePopover *self,
 
     edit_name = nautilus_file_get_edit_name (self->target_file);
 
-    g_signal_handlers_block_by_func (self->name_entry,
-                                     nautilus_filename_validator_validate,
-                                     self->validator);
-
     gtk_editable_set_text (GTK_EDITABLE (self->name_entry), edit_name);
-
-    g_signal_handlers_unblock_by_func (self->name_entry,
-                                       nautilus_filename_validator_validate,
-                                       self->validator);
 
     gtk_popover_set_pointing_to (GTK_POPOVER (self), pointing_to);
     gtk_popover_popup (GTK_POPOVER (self));
@@ -291,7 +286,7 @@ nautilus_rename_file_popover_class_init (NautilusRenameFilePopoverClass *klass)
     object_class->dispose = nautilus_rename_file_popover_dispose;
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-rename-file-popover.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-rename-file-popover.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusRenameFilePopover, name_entry);
     gtk_widget_class_bind_template_child (widget_class, NautilusRenameFilePopover, title_label);

@@ -1,10 +1,24 @@
-/*
- * SPDX-FileCopyrightText: 2002 Jan Arne Petersen
- * SPDX-FileCopyrightText: 2016 Carlos Soriano <csoriano@gnome.com>
+/* nautilus-preferences-window.c - Functions to create and show the nautilus
+ *  preference window.
  *
- * SPDX-License-Identifier: LGPL-2.1-or-later
+ *  Copyright (C) 2002 Jan Arne Petersen
+ *  Copyright (C) 2016 Carlos Soriano <csoriano@gnome.com>
  *
- * Authors: Jan Arne Petersen <jpetersen@uni-bonn.de>
+ *  The Gnome Library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Library General Public License as
+ *  published by the Free Software Foundation; either version 2 of the
+ *  License, or (at your option) any later version.
+ *
+ *  The Gnome Library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Library General Public
+ *  License along with the Gnome Library; see the file COPYING.LIB.  If not,
+ *  see <http://www.gnu.org/licenses/>.
+ *
+ *  Authors: Jan Arne Petersen <jpetersen@uni-bonn.de>
  */
 
 #include <config.h>
@@ -13,7 +27,9 @@
 
 #include <adwaita.h>
 #include <glib/gi18n.h>
+#include <nautilus-extension.h>
 
+#include "nautilus-column-utilities.h"
 #include "nautilus-date-utilities.h"
 #include "nautilus-global-preferences.h"
 
@@ -27,11 +43,9 @@
 #define NAUTILUS_PREFERENCES_DIALOG_LIST_VIEW_USE_TREE_WIDGET                  \
         "use_tree_view_row"
 
-/* toggle group preferences */
-#define NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_TOGGLE_GROUP                   \
-        "open_action_toggle_group"
-
 /* combo preferences */
+#define NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO                          \
+        "open_action_row"
 #define NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW                       \
         "search_recursive_row"
 #define NAUTILUS_PREFERENCES_DIALOG_THUMBNAILS_ROW                       \
@@ -44,6 +58,185 @@ static const char * const speed_tradeoff_values[] =
     "local-only", "always", "never",
     NULL
 };
+
+static const char * const click_behavior_values[] = {"single", "double", NULL};
+
+static const char * const icon_captions_components[] =
+{
+    "captions_0_comborow", "captions_1_comborow", "captions_2_comborow", NULL
+};
+
+static void
+create_icon_caption_combo_row_items (AdwComboRow *combo_row,
+                                     GList       *columns)
+{
+    g_autoptr (GListStore) list_store = g_list_store_new (NAUTILUS_TYPE_COLUMN);
+    g_autoptr (NautilusColumn) none = NULL;
+    g_autoptr (GtkExpression) expression = NULL;
+    GList *l;
+
+    expression = gtk_property_expression_new (NAUTILUS_TYPE_COLUMN, NULL, "label");
+    adw_combo_row_set_expression (combo_row, expression);
+
+    none = g_object_new (NAUTILUS_TYPE_COLUMN,
+                         "name", "none",
+                         /* Translators: this is referred to captions under icons. */
+                         "label", _("None"),
+                         NULL);
+    g_list_store_append (list_store, none);
+
+    for (l = columns; l != NULL; l = l->next)
+    {
+        NautilusColumn *column;
+        g_autofree char *name = NULL;
+
+        column = NAUTILUS_COLUMN (l->data);
+
+        g_object_get (G_OBJECT (column), "name", &name, NULL);
+
+        /* Don't show name here, it doesn't make sense
+         * starred is instead shown as an emblem for the grid view
+         */
+        if (!strcmp (name, "name") || !strcmp (name, "starred"))
+        {
+            continue;
+        }
+
+        g_list_store_append (list_store, column);
+    }
+    adw_combo_row_set_model (combo_row, G_LIST_MODEL (list_store));
+}
+
+static void
+icon_captions_changed_callback (AdwComboRow *widget,
+                                GParamSpec  *pspec,
+                                gpointer     user_data)
+{
+    g_autoptr (GStrvBuilder) builder = g_strv_builder_new ();
+    g_auto (GStrv) captions = NULL;
+    GPtrArray *combo_rows = (GPtrArray *) user_data;
+
+    for (int i = 0; icon_captions_components[i] != NULL; i++)
+    {
+        GtkWidget *combo_row;
+        GObject *selected_column;
+        g_autofree char *name = NULL;
+
+        combo_row = g_ptr_array_index (combo_rows, i);
+        selected_column = adw_combo_row_get_selected_item (ADW_COMBO_ROW (combo_row));
+        if (G_UNLIKELY (!NAUTILUS_IS_COLUMN (selected_column)))
+        {
+            g_warn_if_reached ();
+            continue;
+        }
+
+        g_object_get (selected_column, "name", &name, NULL);
+        g_strv_builder_add (builder, name);
+    }
+    captions = g_strv_builder_end (builder);
+
+    g_settings_set_strv (nautilus_icon_view_preferences,
+                         NAUTILUS_PREFERENCES_ICON_VIEW_CAPTIONS,
+                         (const char **) captions);
+}
+
+static void
+update_caption_combo_row (GPtrArray  *combo_rows,
+                          int         combo_row_i,
+                          const char *name)
+{
+    AdwComboRow *combo_row;
+    GListModel *model;
+    guint n_columns;
+
+    combo_row = ADW_COMBO_ROW (g_ptr_array_index (combo_rows, combo_row_i));
+    model = adw_combo_row_get_model (combo_row);
+    n_columns = g_list_model_get_n_items (model);
+
+    g_signal_handlers_block_by_func (
+        combo_row, G_CALLBACK (icon_captions_changed_callback), combo_rows);
+
+    for (guint i = 0; i < n_columns; ++i)
+    {
+        g_autoptr (NautilusColumn) column_i = g_list_model_get_item (model, i);
+        g_autofree char *name_i = NULL;
+
+        g_object_get (column_i, "name", &name_i, NULL);
+        if (g_strcmp0 (name, name_i) == 0)
+        {
+            adw_combo_row_set_selected (ADW_COMBO_ROW (combo_row), i);
+            break;
+        }
+    }
+
+    g_signal_handlers_unblock_by_func (
+        combo_row, G_CALLBACK (icon_captions_changed_callback), combo_rows);
+}
+
+static void
+update_icon_captions_from_settings (GPtrArray *combo_rows)
+{
+    g_auto (GStrv) captions = NULL;
+    int i, j;
+
+    captions = g_settings_get_strv (nautilus_icon_view_preferences,
+                                    NAUTILUS_PREFERENCES_ICON_VIEW_CAPTIONS);
+    if (captions == NULL)
+    {
+        return;
+    }
+
+    for (i = 0, j = 0; icon_captions_components[i] != NULL; i++)
+    {
+        const char *data;
+
+        if (captions[j])
+        {
+            data = captions[j];
+            ++j;
+        }
+        else
+        {
+            data = "none";
+        }
+
+        update_caption_combo_row (combo_rows, i, data);
+    }
+}
+
+static void
+nautilus_preferences_dialog_setup_icon_caption_page (GtkBuilder *builder)
+{
+    g_autoptr (GPtrArray) combo_rows = g_ptr_array_sized_new (G_N_ELEMENTS (icon_captions_components));
+    GList *columns;
+    int i;
+    gboolean writable;
+
+    writable = g_settings_is_writable (nautilus_icon_view_preferences,
+                                       NAUTILUS_PREFERENCES_ICON_VIEW_CAPTIONS);
+
+    columns = nautilus_get_common_columns ();
+
+    for (i = 0; icon_captions_components[i] != NULL; i++)
+    {
+        GtkWidget *combo_row;
+
+        combo_row = GTK_WIDGET (
+            gtk_builder_get_object (builder, icon_captions_components[i]));
+        g_ptr_array_add (combo_rows, combo_row);
+
+        create_icon_caption_combo_row_items (ADW_COMBO_ROW (combo_row), columns);
+        gtk_widget_set_sensitive (combo_row, writable);
+
+        g_signal_connect_data (
+            combo_row, "notify::selected", G_CALLBACK (icon_captions_changed_callback),
+            g_ptr_array_ref (combo_rows), (GClosureNotify) g_ptr_array_unref, 0);
+    }
+
+    nautilus_column_list_free (columns);
+
+    update_icon_captions_from_settings (combo_rows);
+}
 
 static void
 bind_builder_bool (GtkBuilder *builder,
@@ -144,21 +337,10 @@ setup_combo (GtkBuilder  *builder,
 }
 
 static void
-bind_builder_toggle_group (GtkBuilder *builder,
-                           GSettings  *settings,
-                           const char *prefs,
-                           const char *group_name)
-{
-    AdwToggleGroup *group = ADW_TOGGLE_GROUP (gtk_builder_get_object (builder, group_name));
-
-    g_settings_bind (settings, prefs,
-                     G_OBJECT (group), "active-name",
-                     G_SETTINGS_BIND_DEFAULT);
-}
-
-static void
 nautilus_preferences_dialog_setup (GtkBuilder *builder)
 {
+    setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO,
+                 (const char *[]) { _("Single-Click"), _("Double-Click"), NULL });
     setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW,
                  (const char *[]) { _("On This Device Only"), _("All Locations"), _("Never"), NULL });
     setup_combo (builder, NAUTILUS_PREFERENCES_DIALOG_THUMBNAILS_ROW,
@@ -182,9 +364,10 @@ nautilus_preferences_dialog_setup (GtkBuilder *builder)
 
     setup_detailed_date (builder);
 
-    bind_builder_toggle_group (builder, nautilus_preferences,
-                               NAUTILUS_PREFERENCES_CLICK_POLICY,
-                               NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_TOGGLE_GROUP);
+    bind_builder_combo_row (builder, nautilus_preferences,
+                            NAUTILUS_PREFERENCES_DIALOG_OPEN_ACTION_COMBO,
+                            NAUTILUS_PREFERENCES_CLICK_POLICY,
+                            (const char **) click_behavior_values);
     bind_builder_combo_row (builder, nautilus_preferences,
                             NAUTILUS_PREFERENCES_DIALOG_SEARCH_RECURSIVE_ROW,
                             NAUTILUS_PREFERENCES_RECURSIVE_SEARCH,
@@ -197,6 +380,8 @@ nautilus_preferences_dialog_setup (GtkBuilder *builder)
                             NAUTILUS_PREFERENCES_DIALOG_COUNT_ROW,
                             NAUTILUS_PREFERENCES_SHOW_DIRECTORY_ITEM_COUNTS,
                             (const char **) speed_tradeoff_values);
+
+    nautilus_preferences_dialog_setup_icon_caption_page (builder);
 }
 
 void
@@ -215,7 +400,7 @@ nautilus_preferences_dialog_show (GtkWidget *parent)
         g_clear_weak_pointer (&preferences_dialog);
     }
 
-    builder = gtk_builder_new_from_resource ("/org/gnome/nautilus/ui/nautilus-preferences-dialog.ui");
+    builder = gtk_builder_new_from_resource ("/io/github/bhuveevh/opentiafiles/ui/nautilus-preferences-dialog.ui");
     nautilus_preferences_dialog_setup (builder);
 
     preferences_dialog = ADW_PREFERENCES_DIALOG (gtk_builder_get_object (builder, "preferences_dialog"));
