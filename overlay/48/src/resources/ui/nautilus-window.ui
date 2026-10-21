@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <menu id="app_menu">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">New _Window</attribute>
+        <attribute name="action">app.clone-window</attribute>
+        <attribute name="verb-icon">window-new-symbolic</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">New _Tab</attribute>
+        <attribute name="action">win.new-tab</attribute>
+        <attribute name="verb-icon">tab-new-symbolic</attribute>
+      </item>
+    </section>
+    <section id="undo_redo_section">
+      <!-- Note: This section is often recreated by undo_manager_changed() to
+           change the labels of the actions. If you change anything here,
+           remember to change in the code as well. -->
+      <item>
+        <attribute name="label" translatable="yes">_Undo</attribute>
+        <attribute name="action">win.undo</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Redo</attribute>
+        <attribute name="action">win.redo</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Preferences</attribute>
+        <attribute name="action">app.preferences</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
+        <attribute name="action">win.show-help-overlay</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_Help</attribute>
+        <attribute name="action">app.help</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">_About Files</attribute>
+        <attribute name="action">app.about</attribute>
+      </item>
+    </section>
+  </menu>
+  <menu id="tab_menu_model">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_New Tab</attribute>
+        <attribute name="action">win.new-tab</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Re_store Closed Tab</attribute>
+        <attribute name="action">win.restore-tab</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">Move Tab to New _Window</attribute>
+        <attribute name="action">win.tab-move-new-window</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes" comments="Translators: use “Move Tab _Right” for RTL languages">Move Tab _Left</attribute>
+        <attribute name="action">win.tab-move-left</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes" comments="Translators: use “Move Tab _Left” for RTL languages">Move Tab _Right</attribute>
+        <attribute name="action">win.tab-move-right</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">_Close Tab</attribute>
+        <attribute name="action">win.close-current-view</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Close _Other Tabs</attribute>
+        <attribute name="action">win.close-other-tabs</attribute>
+      </item>
+    </section>
+  </menu>
+  <menu id="menubar_model">
+    <submenu>
+      <attribute name="label" translatable="yes">_File</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">New _Window</attribute>
+          <attribute name="action">app.new-window</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">New _Tab</attribute>
+          <attribute name="action">win.new-tab</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">New _Folder</attribute>
+          <attribute name="action">view.new-folder</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_Close Tab</attribute>
+          <attribute name="action">win.close-current-view</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Quit</attribute>
+          <attribute name="action">app.quit</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Edit</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_Undo</attribute>
+          <attribute name="action">win.undo</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Redo</attribute>
+          <attribute name="action">win.redo</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">Cu_t</attribute>
+          <attribute name="action">view.cut</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Copy</attribute>
+          <attribute name="action">view.copy</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Paste</attribute>
+          <attribute name="action">view.paste</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">Select _All</attribute>
+          <attribute name="action">view.select-all</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Rename…</attribute>
+          <attribute name="action">view.rename</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Delete</attribute>
+          <attribute name="action">view.move-to-trash</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">P_roperties</attribute>
+          <attribute name="action">view.properties</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_View</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">Zoom _In</attribute>
+          <attribute name="action">view.zoom-in</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">Zoom _Out</attribute>
+          <attribute name="action">view.zoom-out</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Normal Size</attribute>
+          <attribute name="action">view.zoom-standard</attribute>
+        </item>
+      </section>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">Show _Hidden Files</attribute>
+          <attribute name="action">view.show-hidden-files</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Go</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_Back</attribute>
+          <attribute name="action">slot.back</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Forward</attribute>
+          <attribute name="action">slot.forward</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_Home</attribute>
+          <attribute name="action">win.go-home</attribute>
+        </item>
+      </section>
+    </submenu>
+    <submenu>
+      <attribute name="label" translatable="yes">_Help</attribute>
+      <section>
+        <item>
+          <attribute name="label" translatable="yes">_Help</attribute>
+          <attribute name="action">app.help</attribute>
+        </item>
+        <item>
+          <attribute name="label" translatable="yes">_About Files</attribute>
+          <attribute name="action">app.about</attribute>
+        </item>
+      </section>
+    </submenu>
+  </menu>
+  <template class="NautilusWindow" parent="AdwApplicationWindow">
+    <property name="height-request">380</property>
+    <property name="show-menubar">False</property>
+    <binding name="title">
+      <lookup name="title">
+        <lookup name="active-slot">NautilusWindow</lookup>
+      </lookup>
+    </binding>
+    <style>
+      <class name="view"/>
+    </style>
+    <child>
+      <object class="NautilusShortcutManager">
+        <property name="child">
+          <object class="AdwToastOverlay" id="toast_overlay">
+            <property name="child">
+              <object class="AdwOverlaySplitView" id="split_view">
+                <property name="enable-show-gesture">False</property>
+                <property name="enable-hide-gesture">False</property>
+                <property name="max-sidebar-width">240</property>
+                <property name="sidebar-width-unit">px</property>
+                <property name="sidebar-width-fraction">0.2</property>
+                <property name="sidebar">
+                  <object class="AdwToolbarView">
+                    <property name="reveal-bottom-bars"
+                              bind-source="progress_indicator" bind-property="reveal"
+                              bind-flags="sync-create"/>
+                    <child type="top">
+                      <object class="AdwHeaderBar">
+                        <property name="decoration-layout">:minimize,maximize,close</property>
+                        <child type="start">
+                          <object class="GtkToggleButton">
+                            <property name="tooltip_text" translatable="yes">Search Everywhere</property>
+                            <property name="action_name">slot.search-global</property>
+                            <property name="icon_name">edit-find-symbolic</property>
+                          </object>
+                        </child>
+                        <property name="title-widget">
+                          <object class="AdwWindowTitle">
+                            <property name="title" translatable="yes">Files</property>
+                          </object>
+                        </property>
+                        <child type="end">
+                          <object class="GtkMenuButton">
+                            <property name="tooltip-text" translatable="yes">Main Menu</property>
+                            <property name="icon_name">open-menu-symbolic</property>
+                            <property name="menu-model">app_menu</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="bottom">
+                      <object class="GtkBox">
+                        <style>
+                          <class name="toolbar"/>
+                        </style>
+                        <child>
+                          <object class="NautilusProgressIndicator" id="progress_indicator" />
+                        </child>
+                      </object>
+                    </child>
+                    <property name="content">
+                      <object class="NautilusGtkPlacesSidebar" id="places_sidebar">
+                        <property name="vexpand">True</property>
+                        <property name="window-slot" bind-source="NautilusWindow" bind-property="active-slot" bind-flags="sync-create"/>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+                <property name="content">
+                  <object class="AdwToolbarView">
+                    <child type="top">
+                      <object class="NautilusToolbar" id="toolbar">
+                        <property name="show-view-controls">true</property>
+                        <property name="show-history-controls">true</property>
+                        <property name="sidebar-button-active" bind-source="split_view" bind-property="show-sidebar" bind-flags="bidirectional|sync-create"/>
+                        <property name="window-slot" bind-source="NautilusWindow" bind-property="active-slot" bind-flags="sync-create"/>
+                      </object>
+                    </child>
+                    <child type="top">
+                      <object class="GtkPopoverMenuBar" id="menubar">
+                        <property name="menu-model">menubar_model</property>
+                        <property name="halign">fill</property>
+                      </object>
+                    </child>
+                    <child type="top">
+                      <object class="GtkBox" id="command_bar">
+                        <property name="spacing">6</property>
+                        <style>
+                          <class name="toolbar"/>
+                          <class name="command-bar"/>
+                        </style>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.new-folder</property>
+                            <property name="icon-name">folder-new-symbolic</property>
+                            <property name="label" translatable="yes">New</property>
+                            <property name="tooltip-text" translatable="yes">New Folder</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.cut</property>
+                            <property name="icon-name">edit-cut-symbolic</property>
+                            <property name="label" translatable="yes">Cut</property>
+                            <property name="tooltip-text" translatable="yes">Cut</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.copy</property>
+                            <property name="icon-name">edit-copy-symbolic</property>
+                            <property name="label" translatable="yes">Copy</property>
+                            <property name="tooltip-text" translatable="yes">Copy</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.paste</property>
+                            <property name="icon-name">edit-paste-symbolic</property>
+                            <property name="label" translatable="yes">Paste</property>
+                            <property name="tooltip-text" translatable="yes">Paste</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.rename</property>
+                            <property name="icon-name">document-edit-symbolic</property>
+                            <property name="label" translatable="yes">Rename</property>
+                            <property name="tooltip-text" translatable="yes">Rename</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.move-to-trash</property>
+                            <property name="icon-name">user-trash-symbolic</property>
+                            <property name="label" translatable="yes">Delete</property>
+                            <property name="tooltip-text" translatable="yes">Move to Trash</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">view.properties</property>
+                            <property name="icon-name">document-properties-symbolic</property>
+                            <property name="label" translatable="yes">Properties</property>
+                            <property name="tooltip-text" translatable="yes">Properties</property>
+                            <property name="focus-on-click">false</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child type="top">
+                      <object class="AdwTabBar" id="tab_bar">
+                        <property name="view">tab_view</property>
+                      </object>
+                    </child>
+                    <property name="content">
+                      <object class="AdwTabView" id="tab_view">
+                        <property name="menu-model">tab_menu_model</property>
+                      </object>
+                    </property>
+                    <child type="bottom">
+                      <object class="NautilusNetworkAddressBar" id="network_address_bar">
+                        <property name="visible">False</property>
+                      </object>
+                    </child>
+                    <child type="bottom">
+                      <object class="GtkActionBar" id="action_bar">
+                        <property name="revealed">False</property>
+                        <child type="start">
+                          <object class="NautilusHistoryControls">
+                            <property name="window-slot" bind-source="NautilusWindow" bind-property="active-slot" bind-flags="sync-create"/>
+                          </object>
+                        </child>
+                        <child type="end">
+                          <object class="NautilusViewControls">
+                            <property name="window-slot" bind-source="NautilusWindow" bind-property="active-slot" bind-flags="sync-create"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </child>
+    <child>
+      <object class="AdwBreakpoint">
+        <condition>max-width: 682sp</condition>
+        <setter object="split_view" property="collapsed">True</setter>
+        <setter object="split_view" property="enable-show-gesture">True</setter>
+        <setter object="split_view" property="enable-hide-gesture">True</setter>
+        <setter object="toolbar" property="show-sidebar-button">True</setter>
+        <setter object="toolbar" property="show-view-controls">False</setter>
+        <setter object="toolbar" property="show-history-controls">False</setter>
+        <setter object="action_bar" property="revealed">True</setter>
+        <setter object="progress_indicator" property="popover-position">2</setter>
+      </object>
+    </child>
+  </template>
+</interface>

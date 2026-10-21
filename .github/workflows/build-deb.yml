@@ -1,0 +1,126 @@
+name: Build OpentiaFiles .deb (GNOME 48/49 and GNOME 50)
+
+on:
+  push:
+    branches: [ builds ]
+  workflow_dispatch:
+
+jobs:
+  build-48-49:
+    name: .deb for GNOME 48 / 49
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - name: Base tooling
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Fetch Nautilus 48.7 and apply OpentiaFiles overlay
+        run: |
+          set -eux
+          git clone --depth 1 --branch 48.7 https://github.com/GNOME/nautilus.git src
+          rm -rf src/.git
+          cp -a overlay/48/. src/
+          while IFS= read -r f; do
+            [ -n "$f" ] && rm -f "src/$f" || true
+          done < deletes-48.txt
+
+      - name: Build dependencies
+        run: |
+          set -eux
+          for f in /etc/apt/sources.list.d/*.sources; do
+            [ -f "$f" ] && sed -i 's/^Types: deb$/Types: deb deb-src/' "$f" || true
+          done
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential meson ninja-build pkg-config gettext dpkg-dev \
+            desktop-file-utils || true
+          apt-get build-dep -y nautilus || true
+          apt-get install -y --no-install-recommends \
+            libgtk-4-dev libadwaita-1-dev libglib2.0-dev libgnome-desktop-4-dev \
+            libgexiv2-dev libportal-dev libxml2-dev libgdk-pixbuf-2.0-dev \
+            libcloudproviders-dev libexif-dev libselinux1-dev \
+            libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+            gsettings-desktop-schemas-dev gnome-autoar-0-dev libgnome-autoar-0-dev \
+            libtracker-sparql-3.0-dev || true
+
+      - name: Show library versions
+        run: pkg-config --modversion gtk4 libadwaita-1 glib-2.0 2>/dev/null || true
+
+      - name: Configure, build, package
+        working-directory: src
+        run: |
+          set -eux
+          meson setup builddir --prefix=/usr -Dtests=none
+          ninja -C builddir
+          bash ../packaging/make-deb.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opentiafiles-deb-48-49
+          path: src/opentiafiles_*.deb
+          if-no-files-found: error
+
+  build-50:
+    name: .deb for GNOME 50
+    runs-on: ubuntu-latest
+    container: ubuntu:26.04
+    steps:
+      - name: Base tooling
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends git ca-certificates
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Fetch Nautilus 50.4 and apply OpentiaFiles overlay
+        run: |
+          set -eux
+          git clone --depth 1 --branch 50.4 https://github.com/GNOME/nautilus.git src
+          rm -rf src/.git
+          cp -a overlay/50/. src/
+          while IFS= read -r f; do
+            [ -n "$f" ] && rm -f "src/$f" || true
+          done < deletes-50.txt
+
+      - name: Build dependencies
+        run: |
+          set -eux
+          for f in /etc/apt/sources.list.d/*.sources; do
+            [ -f "$f" ] && sed -i 's/^Types: deb$/Types: deb deb-src/' "$f" || true
+          done
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential meson ninja-build pkg-config gettext dpkg-dev \
+            desktop-file-utils blueprint-compiler || true
+          apt-get build-dep -y nautilus || true
+          apt-get install -y --no-install-recommends \
+            libgtk-4-dev libadwaita-1-dev libglib2.0-dev libgnome-desktop-4-dev \
+            libportal-dev libxml2-dev libgdk-pixbuf-2.0-dev \
+            libcloudproviders-dev libexif-dev libselinux1-dev \
+            gsettings-desktop-schemas-dev libgnome-autoar-0-dev \
+            libtinysparql-dev libglycin-2-dev libglycin-gtk4-2-dev || true
+
+      - name: Show library versions
+        run: pkg-config --modversion gtk4 libadwaita-1 glib-2.0 2>/dev/null || true
+
+      - name: Configure, build, package
+        working-directory: src
+        run: |
+          set -eux
+          meson setup builddir --prefix=/usr -Dtests=none -Dextensions=false
+          ninja -C builddir
+          bash ../packaging/make-deb.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opentiafiles-deb-50
+          path: src/opentiafiles_*.deb
+          if-no-files-found: error
