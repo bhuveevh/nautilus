@@ -23,11 +23,13 @@ jobs:
       - name: Fetch Nautilus 48.7 and apply OpentiaFiles overlay
         run: |
           set -eux
-          git clone --depth 1 --branch 48.7 https://github.com/GNOME/nautilus.git src
-          rm -rf src/.git
-          cp -a overlay/48/. src/
+          echo '--- workspace before clone ---'; ls -la
+          rm -rf nsrc
+          git clone --depth 1 --branch 48.7 https://github.com/GNOME/nautilus.git nsrc
+          rm -rf nsrc/.git
+          cp -a overlay/48/. nsrc/
           while IFS= read -r f; do
-            [ -n "$f" ] && rm -f "src/$f" || true
+            [ -n "$f" ] && rm -f "nsrc/$f" || true
           done < deletes-48.txt
 
       - name: Build dependencies
@@ -53,7 +55,7 @@ jobs:
         run: pkg-config --modversion gtk4 libadwaita-1 glib-2.0 2>/dev/null || true
 
       - name: Configure, build, package
-        working-directory: src
+        working-directory: nsrc
         run: |
           set -eux
           meson setup builddir --prefix=/usr -Dtests=none
@@ -63,7 +65,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: opentiafiles-deb-48-49
-          path: src/opentiafiles_*.deb
+          path: nsrc/opentiafiles_*.deb
           if-no-files-found: error
 
   build-50:
@@ -83,11 +85,13 @@ jobs:
       - name: Fetch Nautilus 50.4 and apply OpentiaFiles overlay
         run: |
           set -eux
-          git clone --depth 1 --branch 50.4 https://github.com/GNOME/nautilus.git src
-          rm -rf src/.git
-          cp -a overlay/50/. src/
+          echo '--- workspace before clone ---'; ls -la
+          rm -rf nsrc
+          git clone --depth 1 --branch 50.4 https://github.com/GNOME/nautilus.git nsrc
+          rm -rf nsrc/.git
+          cp -a overlay/50/. nsrc/
           while IFS= read -r f; do
-            [ -n "$f" ] && rm -f "src/$f" || true
+            [ -n "$f" ] && rm -f "nsrc/$f" || true
           done < deletes-50.txt
 
       - name: Build dependencies
@@ -112,7 +116,7 @@ jobs:
         run: pkg-config --modversion gtk4 libadwaita-1 glib-2.0 2>/dev/null || true
 
       - name: Configure, build, package
-        working-directory: src
+        working-directory: nsrc
         run: |
           set -eux
           meson setup builddir --prefix=/usr -Dtests=none -Dextensions=false
@@ -122,5 +126,5 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: opentiafiles-deb-50
-          path: src/opentiafiles_*.deb
+          path: nsrc/opentiafiles_*.deb
           if-no-files-found: error
