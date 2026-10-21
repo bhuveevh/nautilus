@@ -334,7 +334,7 @@ libnautilus_dep = declare_dependency(
 )
 
 nautilus = executable(
-  'nautilus',
+  'opentia-files',
   'nautilus-main.c',
   dependencies: libnautilus_dep,
   install: true,

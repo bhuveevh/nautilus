@@ -136,7 +136,7 @@ build_save_file_args (const char *parent_window,
 
     return g_variant_new ("(osss@a{sv})",
                           "/org/gnome/Nautilus/Devel",
-                          "org.gnome.Nautilus.Devel",
+                          "io.github.bhuveevh.OpentiaFiles",
                           parent_window,
                           title,
                           options);

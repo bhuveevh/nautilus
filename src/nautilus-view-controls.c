@@ -239,7 +239,7 @@ nautilus_view_controls_class_init (NautilusViewControlsClass *klass)
     g_object_class_install_properties (object_class, N_PROPS, properties);
 
     gtk_widget_class_set_template_from_resource (widget_class,
-                                                 "/org/gnome/nautilus/ui/nautilus-view-controls.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-view-controls.ui");
     gtk_widget_class_bind_template_child (widget_class, NautilusViewControls, view_menu);
     gtk_widget_class_bind_template_child (widget_class, NautilusViewControls, view_split_button);
 }
@@ -250,7 +250,7 @@ nautilus_view_controls_init (NautilusViewControls *self)
     gtk_widget_init_template (GTK_WIDGET (self));
 
     g_autoptr (GtkBuilder) builder =
-        gtk_builder_new_from_resource ("/org/gnome/nautilus/menu/nautilus-toolbar-view-menu.ui");
+        gtk_builder_new_from_resource ("/io/github/bhuveevh/opentiafiles/menu/nautilus-toolbar-view-menu.ui");
     g_autoptr (GMenuItem) sort_item = g_menu_item_new_from_model (self->view_menu, SORT_ITEM_POSITION);
 
     self->sort_section = G_MENU_MODEL (g_object_ref (gtk_builder_get_object (builder, "sort_section")));

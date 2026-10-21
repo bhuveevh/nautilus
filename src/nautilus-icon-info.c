@@ -47,7 +47,7 @@ nautilus_icon_info_get_fallback (int size,
 
         if (fallback_paintable == NULL)
         {
-            const char *resource_path = "/org/gnome/nautilus/image/text-x-preview.svg";
+            const char *resource_path = "/io/github/bhuveevh/opentiafiles/image/text-x-preview.svg";
 
             fallback_paintable = gtk_svg_new_from_resource (resource_path);
         }

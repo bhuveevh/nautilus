@@ -300,7 +300,7 @@ nautilus_app_chooser_class_init (NautilusAppChooserClass *klass)
     object_class->get_property = app_chooser_get_property;
     object_class->set_property = nautilus_app_chooser_set_property;
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-app-chooser.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-app-chooser.ui");
 
     signals[SIGNAL_APP_CHOSEN] = g_signal_new ("app-chosen",
                                                NAUTILUS_TYPE_APP_CHOOSER,

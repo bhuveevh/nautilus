@@ -1655,7 +1655,7 @@ nautilus_window_class_init (NautilusWindowClass *class)
     g_object_class_install_properties (oclass, N_PROPS, properties);
 
     gtk_widget_class_set_template_from_resource (wclass,
-                                                 "/org/gnome/nautilus/ui/nautilus-window.ui");
+                                                 "/io/github/bhuveevh/opentiafiles/ui/nautilus-window.ui");
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, undo_redo_section);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, toolbar);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, split_view);
@@ -1729,7 +1729,7 @@ nautilus_window_show_about_dialog (NautilusWindow *window)
                                   "NAUTILUS_DISABLE_PLUGINS=TRUE nautilus", NULL);
     }
 
-    dialog = adw_about_dialog_new_from_appdata ("/org/gnome/nautilus/appdata", NULL);
+    dialog = adw_about_dialog_new_from_appdata ("/io/github/bhuveevh/opentiafiles/appdata", NULL);
 
     adw_about_dialog_set_version (ADW_ABOUT_DIALOG (dialog), VERSION);
     adw_about_dialog_set_debug_info (ADW_ABOUT_DIALOG (dialog), debug_info);

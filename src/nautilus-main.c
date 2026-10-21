@@ -43,7 +43,7 @@ main (int   argc,
     if (getuid () == 0)
     {
         g_warning (_("Running as root is not supported. "
-                     "Consider running `nautilus admin:///` instead."));
+                     "Consider running `opentia-files admin:///` instead."));
 
         exit (ENOTSUP);
     }

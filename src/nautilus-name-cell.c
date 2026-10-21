@@ -422,8 +422,8 @@ snapshot (GtkWidget   *widget,
             g_object_get (self, "icon-size", &icon_size, NULL);
             use_small_icon = icon_size <= NAUTILUS_LIST_ICON_SIZE_MEDIUM;
             resource = use_small_icon
-                        ? "/org/gnome/nautilus/icons/scalable/actions/cut-symbolic.svg"
-                        : "/org/gnome/nautilus/icons/scalable/actions/cut-large-symbolic.svg";
+                        ? "/io/github/bhuveevh/opentiafiles/icons/scalable/actions/cut-symbolic.svg"
+                        : "/io/github/bhuveevh/opentiafiles/icons/scalable/actions/cut-large-symbolic.svg";
             svg = gtk_svg_new_from_resource (resource);
             gtk_widget_get_color (widget, &color);
 
@@ -466,7 +466,7 @@ nautilus_name_cell_class_init (NautilusNameCellClass *klass)
     g_type_ensure (NAUTILUS_TYPE_IMAGE);
 
     gtk_widget_class_set_layout_manager_type (widget_class, GTK_TYPE_BIN_LAYOUT);
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-name-cell.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-name-cell.ui");
 
     /* Needs to add the direct child of the template widget to dispose it since
      * a plain GtkWidget doesn't dispose it's child automatically. */

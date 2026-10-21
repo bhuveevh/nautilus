@@ -255,7 +255,7 @@ ensure_filmholes (void)
 {
     if (filmholes_left == NULL)
     {
-        filmholes_left = gdk_texture_new_from_resource ("/org/gnome/nautilus/image/filmholes.png");
+        filmholes_left = gdk_texture_new_from_resource ("/io/github/bhuveevh/opentiafiles/image/filmholes.png");
     }
 
     return filmholes_left != NULL;

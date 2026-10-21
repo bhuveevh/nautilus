@@ -440,7 +440,7 @@ snapshot (GtkWidget   *widget,
         GdkRGBA color, dashed_border_color, icon_color;
         const double border_opacity = is_high_contrast ? 0.5 : 0.15;
         const double dim_opacity = is_high_contrast ? 0.9 : 0.55;
-        const char *resource = "/org/gnome/nautilus/icons/scalable/actions/cut-large-symbolic.svg";
+        const char *resource = "/io/github/bhuveevh/opentiafiles/icons/scalable/actions/cut-large-symbolic.svg";
         g_autoptr (GtkSvg) svg = gtk_svg_new_from_resource (resource);
 
         g_object_get (self, "icon-size", &icon_size, NULL);
@@ -475,7 +475,7 @@ nautilus_grid_cell_class_init (NautilusGridCellClass *klass)
 
     g_type_ensure (NAUTILUS_TYPE_IMAGE);
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-grid-cell.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-grid-cell.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusGridCell, icon);
     gtk_widget_class_bind_template_child (widget_class, NautilusGridCell, emblems_box);

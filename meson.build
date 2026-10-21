@@ -6,7 +6,7 @@ project(
     'warning_level=2',
   ],
   # Do not forget when releasing:
-  #  * Set release date in data/org.gnome.Nautilus.metainfo.xml.in.in
+  #  * Set release date in data/io.github.bhuveevh.OpentiaFiles.metainfo.xml.in.in
   version: '52.alpha',
   meson_version: '>= 1.1.0',
   license: 'GPL-3.0-or-later',
@@ -175,7 +175,7 @@ if get_option('profile') == 'Devel'
   name_suffix = ' (Development Snapshot)'
 endif
 
-application_id = 'org.gnome.Nautilus' + app_id_suffix
+application_id = 'io.github.bhuveevh.OpentiaFiles' + app_id_suffix
 
 if profile == ''
   # Example: 40.0

@@ -82,11 +82,11 @@ nautilus_global_preferences_init (void)
 
     initialized = TRUE;
 
-    nautilus_preferences = g_settings_new ("org.gnome.nautilus.preferences");
-    nautilus_compression_preferences = g_settings_new ("org.gnome.nautilus.compression");
-    nautilus_window_state = g_settings_new ("org.gnome.nautilus.window-state");
-    nautilus_icon_view_preferences = g_settings_new ("org.gnome.nautilus.icon-view");
-    nautilus_list_view_preferences = g_settings_new ("org.gnome.nautilus.list-view");
+    nautilus_preferences = g_settings_new ("io.github.bhuveevh.opentiafiles.preferences");
+    nautilus_compression_preferences = g_settings_new ("io.github.bhuveevh.opentiafiles.compression");
+    nautilus_window_state = g_settings_new ("io.github.bhuveevh.opentiafiles.window-state");
+    nautilus_icon_view_preferences = g_settings_new ("io.github.bhuveevh.opentiafiles.icon-view");
+    nautilus_list_view_preferences = g_settings_new ("io.github.bhuveevh.opentiafiles.list-view");
     /* Some settings such as show hidden files are shared between Nautilus and GTK file chooser */
     gtk_filechooser_preferences = g_settings_new_with_path ("org.gtk.gtk4.Settings.FileChooser",
                                                             "/org/gtk/gtk4/settings/file-chooser/");

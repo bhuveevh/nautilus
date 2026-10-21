@@ -1492,7 +1492,7 @@ nautilus_batch_rename_dialog_class_init (NautilusBatchRenameDialogClass *klass)
 
     g_type_ensure (NAUTILUS_TYPE_BATCH_RENAME_ITEM);
 
-    gtk_widget_class_set_template_from_resource (widget_class, "/org/gnome/nautilus/ui/nautilus-batch-rename-dialog.ui");
+    gtk_widget_class_set_template_from_resource (widget_class, "/io/github/bhuveevh/opentiafiles/ui/nautilus-batch-rename-dialog.ui");
 
     gtk_widget_class_bind_template_child (widget_class, NautilusBatchRenameDialog, toolbar_view);
     gtk_widget_class_bind_template_child (widget_class, NautilusBatchRenameDialog, batch_listview);

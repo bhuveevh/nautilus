@@ -308,7 +308,7 @@ nautilus_path_bar_init (NautilusPathBar *self)
 
     /* Add context menu for pathbar buttons */
     gtk_builder_add_from_resource (builder,
-                                   "/org/gnome/nautilus/menu/nautilus-pathbar-context-menu.ui",
+                                   "/io/github/bhuveevh/opentiafiles/menu/nautilus-pathbar-context-menu.ui",
                                    &error);
     if (error != NULL)
     {
