@@ -6,8 +6,10 @@
 set -euo pipefail
 
 PKG="opentiafiles"
-VER="$(sed -n 's/^Major Changes in \([0-9][^ ]*\).*/\1/p' NEWS | head -1)"
-VER="${VER:-1.0}"
+BASE_VER="$(sed -n 's/^Major Changes in \([0-9][^ ]*\).*/\1/p' NEWS | head -1)"
+BASE_VER="${BASE_VER:-1.0}"
+REV="2"
+VER="${BASE_VER}-${REV}"
 ARCH="$(dpkg --print-architecture)"
 PREFIX="/usr"
 
@@ -15,10 +17,7 @@ echo "==> Staging into pkgroot (version $VER, arch $ARCH)"
 DESTDIR="$PWD/pkgroot" ninja -C builddir install
 
 echo "==> Tidying staged tree"
-# Convenience alias so `opentiafiles` works as well as `opentia-files`.
 ln -sf opentia-files pkgroot/usr/bin/opentiafiles
-# Drop developer-only files; they would clash with the distro's -dev package and
-# are not needed at runtime.
 rm -rf pkgroot/usr/include/nautilus
 rm -f  pkgroot/usr/share/gir-1.0/Nautilus-*.gir
 rm -f  pkgroot/usr/lib/*/pkgconfig/libnautilus-extension-4.pc
@@ -46,13 +45,26 @@ opentiafiles (1.0) unstable; urgency=low
 
  -- Bhuvee Paswan <bhuveepaswan@gmail.com>  $(date -R)
 EOF
-  DEPS="$(dpkg-shlibdeps -O \
-      pkgroot/usr/bin/opentia-files \
-      $(ls pkgroot/usr/lib/*/libnautilus-extension.so.* 2>/dev/null || true) \
-      $(ls pkgroot/usr/lib/*/nautilus/extensions-*/*.so 2>/dev/null || true) \
-      2>/dev/null | sed -n 's/^shlibs:Depends=//p' || true)"
+  # --ignore-missing-info: our own libnautilus-extension is not from a package,
+  # without this flag dpkg-shlibdeps aborts and we get no dependencies at all.
+  shlibs_out="$(dpkg-shlibdeps --ignore-missing-info -O \
+        pkgroot/usr/bin/opentia-files \
+        $(ls pkgroot/usr/lib/*/libnautilus-extension.so.* 2>/dev/null || true) \
+        $(ls pkgroot/usr/lib/*/nautilus/extensions-*/*.so 2>/dev/null || true) \
+        2>/dev/null || true)"
+  echo "    dpkg-shlibdeps: $shlibs_out"
+  DEPS="$(printf '%s\n' "$shlibs_out" | sed -n 's/^shlibs:Depends=//p')"
 fi
-[ -n "$DEPS" ] || DEPS="libgtk-4-1 | libgtk-4-1t64, libadwaita-1-0, libglib2.0-0 | libglib2.0-0t64, libgnome-desktop-4-2 | libgnome-desktop-4-2t64, libtinysparql-3.0-0 | libtracker-sparql-3.0-0"
+if [ -z "$DEPS" ]; then
+  echo "    (falling back to an explicit dependency list)"
+  DEPS="libc6, libglib2.0-0 | libglib2.0-0t64, libgtk-4-1 | libgtk-4-1t64, \
+libadwaita-1-0, libcairo2, libpango-1.0-0, libgdk-pixbuf-2.0-0 | libgdk-pixbuf-2.0-0t64, \
+libgraphene-1.0-0, libcloudproviders0, libgnome-autoar-0-0, \
+libgnome-desktop-4-2 | libgnome-desktop-4-2t64, libportal1, libportal-gtk4-1, \
+libtinysparql-3.0-0 | libtracker-sparql-3.0-0, libwayland-client0, libx11-6, \
+libgexiv2-2, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0"
+  DEPS="$(printf '%s' "$DEPS" | tr -d '\n' | sed 's/  */ /g')"
+fi
 echo "    Depends: $DEPS"
 
 echo "==> Writing control metadata"

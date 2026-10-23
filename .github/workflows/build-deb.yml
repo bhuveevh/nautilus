@@ -78,6 +78,25 @@ jobs:
           dpkg -s nautilus    | grep -E '^Status'
           test -x /usr/bin/opentia-files
           test -x /usr/bin/opentiafiles
+
+          # every NEEDED shared library must be provided by a package we depend on
+          deps="$(dpkg-query -W -f='${Depends}' opentiafiles | tr ',|' '\n' | sed 's/(.*//' | tr -d ' ')"
+          echo "Depends: $deps"
+          missing=""
+          for so in $(objdump -p /usr/bin/opentia-files | awk '/NEEDED/{print $2}'); do
+            owner="$(dpkg -S "$so" 2>/dev/null | head -1 | cut -d: -f1 || true)"
+            if [ -z "$owner" ] || [ "$owner" = "opentiafiles" ]; then
+              continue
+            fi
+            if ! printf '%s\n' "$deps" | grep -qx "$owner"; then
+              missing="$missing $so=$owner"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "DEPS COVERAGE FAILED:$missing"
+            exit 1
+          fi
+          echo "DEPS COVERAGE OK"
           echo "INSTALL OK (coexists with nautilus)"
 
       - name: Smoke test - does the window actually start?
@@ -166,6 +185,25 @@ jobs:
           dpkg -s nautilus    | grep -E '^Status'
           test -x /usr/bin/opentia-files
           test -x /usr/bin/opentiafiles
+
+          # every NEEDED shared library must be provided by a package we depend on
+          deps="$(dpkg-query -W -f='${Depends}' opentiafiles | tr ',|' '\n' | sed 's/(.*//' | tr -d ' ')"
+          echo "Depends: $deps"
+          missing=""
+          for so in $(objdump -p /usr/bin/opentia-files | awk '/NEEDED/{print $2}'); do
+            owner="$(dpkg -S "$so" 2>/dev/null | head -1 | cut -d: -f1 || true)"
+            if [ -z "$owner" ] || [ "$owner" = "opentiafiles" ]; then
+              continue
+            fi
+            if ! printf '%s\n' "$deps" | grep -qx "$owner"; then
+              missing="$missing $so=$owner"
+            fi
+          done
+          if [ -n "$missing" ]; then
+            echo "DEPS COVERAGE FAILED:$missing"
+            exit 1
+          fi
+          echo "DEPS COVERAGE OK"
           echo "INSTALL OK (coexists with nautilus)"
 
       - name: Smoke test - does the window actually start?
