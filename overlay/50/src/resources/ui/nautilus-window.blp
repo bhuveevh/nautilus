@@ -439,8 +439,88 @@ template $NautilusWindow: Adw.ApplicationWindow {
             view: tab_view;
           }
 
-          content: Adw.TabView tab_view {
-            menu-model: tab_menu_model;
+          content: Stack content_stack {
+            transition-type: none;
+
+            StackPage {
+              name: "files";
+
+              child: Adw.TabView tab_view {
+                menu-model: tab_menu_model;
+              };
+            }
+
+            StackPage {
+              name: "home";
+
+              child: ScrolledWindow home_page {
+                hscrollbar-policy: never;
+
+                child: Box {
+                  orientation: vertical;
+                  spacing: 16;
+                  margin-top: 28;
+                  margin-bottom: 28;
+                  margin-start: 28;
+                  margin-end: 28;
+
+                  Label {
+                    xalign: 0;
+                    label: _("Home");
+                    styles [ "title-1" ]
+                  }
+
+                  Label {
+                    xalign: 0;
+                    label: _("Quick access");
+                    styles [ "heading" ]
+                  }
+
+                  Box quick_access_box {
+                    spacing: 12;
+                  }
+
+                  Box {
+                    spacing: 24;
+                    homogeneous: true;
+
+                    Box {
+                      orientation: vertical;
+                      spacing: 8;
+                      hexpand: true;
+
+                      Label {
+                        xalign: 0;
+                        label: _("Favorites");
+                        styles [ "heading" ]
+                      }
+
+                      ListBox home_favorites {
+                        selection-mode: none;
+                        styles [ "home-list" ]
+                      }
+                    }
+
+                    Box {
+                      orientation: vertical;
+                      spacing: 8;
+                      hexpand: true;
+
+                      Label {
+                        xalign: 0;
+                        label: _("Recent items");
+                        styles [ "heading" ]
+                      }
+
+                      ListBox home_recents {
+                        selection-mode: none;
+                        styles [ "home-list" ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
           };
 
           [bottom]

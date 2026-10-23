@@ -719,3 +719,24 @@ rubberband { border-radius: 2px; }
   font-size: 0.88em;
   color: #444444;
 }
+
+/* ---- Windows 11 Home page --------------------------------------------- */
+.home-card {
+  border-radius: 6px;
+  background-color: #fbfbfb;
+  border: 1px solid #e5e5e5;
+  box-shadow: none;
+  padding: 8px;
+}
+.home-card:hover { background-color: #f0f6fc; border-color: #cfe3f7; }
+.home-card:active { background-color: #e4effa; }
+.home-card image { color: #0078d4; }
+.home-card label { font-size: 0.92em; color: #1b1b1b; }
+.home-list {
+  background-color: #fbfbfb;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+}
+.home-list > row { border-radius: 4px; }
+.home-list > row:hover { background-color: #f0f6fc; }
+.home-page, scrolledwindow.home-page { background-color: #ffffff; }

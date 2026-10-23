@@ -108,6 +108,13 @@ struct _NautilusWindow
 
     GtkWidget *network_address_bar;
 
+    /* Windows 11 style Home page */
+    GtkWidget *content_stack;
+    GtkWidget *home_page;
+    GtkWidget *quick_access_box;
+    GtkWidget *home_favorites;
+    GtkWidget *home_recents;
+
     /* Status bar (Windows Explorer style) */
     GtkWidget *status_bar_left;
     GtkWidget *status_bar_right;
@@ -1440,8 +1447,275 @@ static gboolean
 nautilus_window_status_bar_tick (gpointer user_data)
 {
     nautilus_window_update_status_bar (NAUTILUS_WINDOW (user_data));
+    nautilus_window_update_home_page (NAUTILUS_WINDOW (user_data));
 
     return G_SOURCE_CONTINUE;
+}
+
+
+typedef struct
+{
+    const char *key;
+    const char *label;
+    const char *icon;
+} HomeShortcut;
+
+static const HomeShortcut home_shortcuts[] = {
+    { "desktop",   N_("Desktop"),   "user-desktop-symbolic" },
+    { "documents", N_("Documents"), "folder-documents-symbolic" },
+    { "downloads", N_("Downloads"), "folder-download-symbolic" },
+    { "music",     N_("Music"),     "folder-music-symbolic" },
+    { "pictures",  N_("Pictures"),  "folder-pictures-symbolic" },
+    { "videos",    N_("Videos"),    "folder-videos-symbolic" },
+};
+
+static void
+on_home_shortcut_activated (GSimpleAction *action,
+                            GVariant      *parameter,
+                            gpointer       user_data)
+{
+    NautilusWindow *window = NAUTILUS_WINDOW (user_data);
+    const char *key = g_variant_get_string (parameter, NULL);
+    const char *path = NULL;
+    g_autoptr (GFile) file = NULL;
+
+    if (g_strcmp0 (key, "desktop") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_DESKTOP);
+    }
+    else if (g_strcmp0 (key, "documents") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_DOCUMENTS);
+    }
+    else if (g_strcmp0 (key, "downloads") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_DOWNLOAD);
+    }
+    else if (g_strcmp0 (key, "music") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_MUSIC);
+    }
+    else if (g_strcmp0 (key, "pictures") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_PICTURES);
+    }
+    else if (g_strcmp0 (key, "videos") == 0)
+    {
+        path = g_get_user_special_dir (G_USER_DIRECTORY_VIDEOS);
+    }
+    else if (g_strcmp0 (key, "home") == 0)
+    {
+        path = g_get_home_dir ();
+    }
+
+    if (path == NULL || window->active_slot == NULL)
+    {
+        return;
+    }
+
+    file = g_file_new_for_path (path);
+    nautilus_window_slot_open_location_full (window->active_slot, file, 0, NULL);
+}
+
+static GtkWidget *
+home_make_card (const HomeShortcut *sc)
+{
+    GtkWidget *button;
+    GtkWidget *box;
+    GtkWidget *image;
+    GtkWidget *label;
+
+    button = gtk_button_new ();
+    gtk_widget_add_css_class (button, "home-card");
+    gtk_widget_set_size_request (button, 110, 92);
+    gtk_widget_set_action_name (button, "win.open-location");
+    gtk_widget_set_action_target_value (button, g_variant_new_string (sc->key));
+
+    box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 8);
+    gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
+    gtk_widget_set_halign (box, GTK_ALIGN_CENTER);
+
+    image = gtk_image_new_from_icon_name (sc->icon);
+    gtk_image_set_pixel_size (GTK_IMAGE (image), 34);
+
+    label = gtk_label_new (_(sc->label));
+    gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
+    gtk_label_set_max_width_chars (GTK_LABEL (label), 12);
+
+    gtk_box_append (GTK_BOX (box), image);
+    gtk_box_append (GTK_BOX (box), label);
+    gtk_button_set_child (GTK_BUTTON (button), box);
+
+    return button;
+}
+
+static void
+home_open_location (NautilusWindow *window,
+                    GFile          *file)
+{
+    if (file != NULL && window->active_slot != NULL)
+    {
+        nautilus_window_slot_open_location_full (window->active_slot, file, 0, NULL);
+    }
+}
+
+static void
+on_home_row_activated (GtkListBox    *list_box,
+                       GtkListBoxRow *row,
+                       gpointer       user_data)
+{
+    GFile *file = g_object_get_data (G_OBJECT (row), "opentia-location");
+
+    if (file != NULL)
+    {
+        home_open_location (NAUTILUS_WINDOW (user_data), file);
+    }
+}
+
+static void
+home_add_row (GtkListBox *list_box,
+              const char *title,
+              const char *subtitle,
+              const char *icon_name,
+              GFile      *file,
+              NautilusWindow *window)
+{
+    GtkWidget *row;
+    GtkWidget *box;
+    GtkWidget *image;
+    GtkWidget *texts;
+    GtkWidget *label;
+    GtkWidget *sub;
+
+    row = gtk_list_box_row_new ();
+    box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
+    gtk_widget_set_margin_top (box, 6);
+    gtk_widget_set_margin_bottom (box, 6);
+    gtk_widget_set_margin_start (box, 8);
+    gtk_widget_set_margin_end (box, 8);
+
+    image = gtk_image_new_from_icon_name (icon_name);
+    gtk_image_set_pixel_size (GTK_IMAGE (image), 20);
+
+    texts = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+    gtk_widget_set_valign (texts, GTK_ALIGN_CENTER);
+
+    label = gtk_label_new (title);
+    gtk_label_set_xalign (GTK_LABEL (label), 0);
+    gtk_label_set_ellipsize (GTK_LABEL (label), PANGO_ELLIPSIZE_END);
+    gtk_box_append (GTK_BOX (texts), label);
+
+    if (subtitle != NULL)
+    {
+        sub = gtk_label_new (subtitle);
+        gtk_label_set_xalign (GTK_LABEL (sub), 0);
+        gtk_widget_add_css_class (sub, "dim-label");
+        gtk_widget_add_css_class (sub, "caption");
+        gtk_label_set_ellipsize (GTK_LABEL (sub), PANGO_ELLIPSIZE_END);
+        gtk_box_append (GTK_BOX (texts), sub);
+    }
+
+    gtk_box_append (GTK_BOX (box), image);
+    gtk_box_append (GTK_BOX (box), texts);
+    gtk_list_box_row_set_child (GTK_LIST_BOX_ROW (row), box);
+
+    if (file != NULL)
+    {
+        g_object_set_data_full (G_OBJECT (row), "opentia-location",
+                                g_object_ref (file), g_object_unref);
+    }
+
+    gtk_list_box_append (list_box, row);
+}
+
+static void
+nautilus_window_build_home_page (NautilusWindow *window)
+{
+    guint i;
+
+    if (window->quick_access_box == NULL || window->home_favorites == NULL)
+    {
+        return;
+    }
+
+    /* Quick access cards */
+    for (i = 0; i < G_N_ELEMENTS (home_shortcuts); i++)
+    {
+        gtk_box_append (GTK_BOX (window->quick_access_box),
+                        home_make_card (&home_shortcuts[i]));
+    }
+
+    /* Favorites (from the user's bookmarks) */
+    {
+        NautilusBookmarkList *bookmarks = nautilus_bookmark_list_get_default ();
+        GList *l;
+
+        for (l = nautilus_bookmark_list_get_bookmarks (bookmarks); l != NULL; l = l->next)
+        {
+            NautilusBookmark *bookmark = NAUTILUS_BOOKMARK (l->data);
+            g_autoptr (GFile) location = nautilus_bookmark_get_location (bookmark);
+            g_autofree char *name = nautilus_bookmark_get_name (bookmark);
+
+            home_add_row (GTK_LIST_BOX (window->home_favorites),
+                          name, NULL, "folder-symbolic", location, window);
+        }
+    }
+
+    /* Recent items */
+    {
+        GtkRecentManager *manager = gtk_recent_manager_get_default ();
+        GList *items = gtk_recent_manager_get_items (manager);
+        GList *l;
+        guint shown = 0;
+
+        for (l = items; l != NULL && shown < 8; l = l->next)
+        {
+            GtkRecentInfo *info = l->data;
+            const char *uri = gtk_recent_info_get_uri (info);
+            g_autoptr (GFile) file = g_file_new_for_uri (uri);
+            g_autofree char *subtitle = NULL;
+            g_autoptr (GDateTime) mtime = NULL;
+
+            mtime = gtk_recent_info_get_modified (info);
+            if (mtime != NULL)
+            {
+                subtitle = g_date_time_format (mtime, "%e %b %Y");
+            }
+
+            home_add_row (GTK_LIST_BOX (window->home_recents),
+                          gtk_recent_info_get_display_name (info),
+                          subtitle, "document-open-recent-symbolic", file, window);
+            shown++;
+        }
+
+        g_list_free_full (items, (GDestroyNotify) gtk_recent_info_unref);
+    }
+
+    g_signal_connect (window->home_favorites, "row-activated",
+                      G_CALLBACK (on_home_row_activated), window);
+    g_signal_connect (window->home_recents, "row-activated",
+                      G_CALLBACK (on_home_row_activated), window);
+}
+
+static void
+nautilus_window_update_home_page (NautilusWindow *window)
+{
+    gboolean at_home = FALSE;
+
+    if (window->content_stack == NULL || window->active_slot == NULL)
+    {
+        return;
+    }
+
+    {
+        g_autoptr (GFile) location = nautilus_window_slot_get_location (window->active_slot);
+        g_autoptr (GFile) home = g_file_new_for_path (g_get_home_dir ());
+
+        at_home = location != NULL && g_file_equal (location, home);
+    }
+
+    gtk_stack_set_visible_child_name (GTK_STACK (window->content_stack),
+                                      at_home ? "home" : "files");
 }
 
 static void
@@ -1635,6 +1909,16 @@ nautilus_window_init (NautilusWindow *window)
 
     gtk_widget_add_css_class (GTK_WIDGET (window), "nautilus-window");
 
+    {
+        GSimpleAction *open_location_action = g_simple_action_new ("open-location", G_VARIANT_TYPE_STRING);
+        g_signal_connect (open_location_action, "activate",
+                          G_CALLBACK (on_home_shortcut_activated), window);
+        g_action_map_add_action (G_ACTION_MAP (window), G_ACTION (open_location_action));
+        g_object_unref (open_location_action);
+    }
+
+    nautilus_window_build_home_page (window);
+
     window->status_bar_timeout_id = g_timeout_add (700, nautilus_window_status_bar_tick, window);
 
     window_group = gtk_window_group_new ();
@@ -1753,6 +2037,10 @@ nautilus_window_class_init (NautilusWindowClass *class)
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, tab_view);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, tab_bar);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, network_address_bar);
+    gtk_widget_class_bind_template_child (wclass, NautilusWindow, content_stack);
+    gtk_widget_class_bind_template_child (wclass, NautilusWindow, quick_access_box);
+    gtk_widget_class_bind_template_child (wclass, NautilusWindow, home_favorites);
+    gtk_widget_class_bind_template_child (wclass, NautilusWindow, home_recents);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, status_bar_left);
     gtk_widget_class_bind_template_child (wclass, NautilusWindow, status_bar_right);
 

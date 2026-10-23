@@ -465,8 +465,115 @@
                       </object>
                     </child>
                     <property name="content">
-                      <object class="AdwTabView" id="tab_view">
-                        <property name="menu-model">tab_menu_model</property>
+                      <object class="GtkStack" id="content_stack">
+                        <property name="transition-type">none</property>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">files</property>
+                            <property name="child">
+                              <object class="AdwTabView" id="tab_view">
+                                <property name="menu-model">tab_menu_model</property>
+                              </object>
+                            </property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkStackPage">
+                            <property name="name">home</property>
+                            <property name="child">
+                              <object class="GtkScrolledWindow" id="home_page">
+                                <property name="hscrollbar_policy">never</property>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="orientation">vertical</property>
+                                    <property name="spacing">16</property>
+                                    <property name="margin-top">28</property>
+                                    <property name="margin-bottom">28</property>
+                                    <property name="margin-start">28</property>
+                                    <property name="margin-end">28</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="xalign">0</property>
+                                        <property name="label" translatable="yes">Home</property>
+                                        <style>
+                                          <class name="title-1"/>
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="xalign">0</property>
+                                        <property name="label" translatable="yes">Quick access</property>
+                                        <style>
+                                          <class name="heading"/>
+                                        </style>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox" id="quick_access_box">
+                                        <property name="spacing">12</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="spacing">24</property>
+                                        <property name="homogeneous">True</property>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">8</property>
+                                            <property name="hexpand">True</property>
+                                            <child>
+                                              <object class="GtkLabel">
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">Favorites</property>
+                                                <style>
+                                                  <class name="heading"/>
+                                                </style>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkListBox" id="home_favorites">
+                                                <property name="selection_mode">none</property>
+                                                <style>
+                                                  <class name="home-list"/>
+                                                </style>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="GtkBox">
+                                            <property name="orientation">vertical</property>
+                                            <property name="spacing">8</property>
+                                            <property name="hexpand">True</property>
+                                            <child>
+                                              <object class="GtkLabel">
+                                                <property name="xalign">0</property>
+                                                <property name="label" translatable="yes">Recent items</property>
+                                                <style>
+                                                  <class name="heading"/>
+                                                </style>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkListBox" id="home_recents">
+                                                <property name="selection_mode">none</property>
+                                                <style>
+                                                  <class name="home-list"/>
+                                                </style>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                          </object>
+                        </child>
                       </object>
                     </property>
                     <child type="bottom">
