@@ -350,58 +350,86 @@ template $NautilusWindow: Adw.ApplicationWindow {
 
             Button {
               action-name: "view.new-folder";
-              icon-name: "folder-new-symbolic";
-              label: _("New");
               tooltip-text: _("New Folder");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "folder-new-symbolic"; }
+                Label { label: _("New"); }
+              };
             }
 
             Button {
               action-name: "view.cut";
-              icon-name: "edit-cut-symbolic";
-              label: _("Cut");
               tooltip-text: _("Cut");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "edit-cut-symbolic"; }
+                Label { label: _("Cut"); }
+              };
             }
 
             Button {
               action-name: "view.copy";
-              icon-name: "edit-copy-symbolic";
-              label: _("Copy");
               tooltip-text: _("Copy");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "edit-copy-symbolic"; }
+                Label { label: _("Copy"); }
+              };
             }
 
             Button {
               action-name: "view.paste";
-              icon-name: "edit-paste-symbolic";
-              label: _("Paste");
               tooltip-text: _("Paste");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "edit-paste-symbolic"; }
+                Label { label: _("Paste"); }
+              };
             }
 
             Button {
               action-name: "view.rename";
-              icon-name: "document-edit-symbolic";
-              label: _("Rename");
               tooltip-text: _("Rename");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "document-edit-symbolic"; }
+                Label { label: _("Rename"); }
+              };
             }
 
             Button {
               action-name: "view.move-to-trash";
-              icon-name: "user-trash-symbolic";
-              label: _("Delete");
               tooltip-text: _("Move to Trash");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "user-trash-symbolic"; }
+                Label { label: _("Delete"); }
+              };
             }
 
             Button {
               action-name: "view.properties";
-              icon-name: "document-properties-symbolic";
-              label: _("Properties");
               tooltip-text: _("Properties");
               focus-on-click: false;
+
+              child: Box {
+                spacing: 6;
+                Image { icon-name: "document-properties-symbolic"; }
+                Label { label: _("Properties"); }
+              };
             }
 
           }
