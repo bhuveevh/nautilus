@@ -1402,6 +1402,8 @@ set_active_slot (NautilusWindow     *window,
 }
 
 
+static void nautilus_window_update_home_page (NautilusWindow *window);
+
 static void
 nautilus_window_update_status_bar (NautilusWindow *window)
 {
@@ -1527,8 +1529,8 @@ home_make_card (const HomeShortcut *sc)
     button = gtk_button_new ();
     gtk_widget_add_css_class (button, "home-card");
     gtk_widget_set_size_request (button, 110, 92);
-    gtk_widget_set_action_name (button, "win.open-location");
-    gtk_widget_set_action_target_value (button, g_variant_new_string (sc->key));
+    gtk_actionable_set_action_name (GTK_ACTIONABLE (button), "win.open-location");
+    gtk_actionable_set_action_target_value (GTK_ACTIONABLE (button), g_variant_new_string (sc->key));
 
     box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 8);
     gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
@@ -1646,10 +1648,11 @@ nautilus_window_build_home_page (NautilusWindow *window)
 
     /* Favorites (from the user's bookmarks) */
     {
-        NautilusBookmarkList *bookmarks = nautilus_bookmark_list_get_default ();
+        NautilusBookmarkList *bookmarks = nautilus_application_get_bookmarks (
+            NAUTILUS_APPLICATION (g_application_get_default ()));
         GList *l;
 
-        for (l = nautilus_bookmark_list_get_bookmarks (bookmarks); l != NULL; l = l->next)
+        for (l = nautilus_bookmark_list_get_all (bookmarks); l != NULL; l = l->next)
         {
             NautilusBookmark *bookmark = NAUTILUS_BOOKMARK (l->data);
             g_autoptr (GFile) location = nautilus_bookmark_get_location (bookmark);

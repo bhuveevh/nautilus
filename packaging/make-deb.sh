@@ -8,7 +8,7 @@ set -euo pipefail
 PKG="opentiafiles"
 BASE_VER="$(sed -n 's/^Major Changes in \([0-9][^ ]*\).*/\1/p' NEWS | head -1)"
 BASE_VER="${BASE_VER:-1.0}"
-REV="7"
+REV="8"
 VER="${BASE_VER}-${REV}"
 ARCH="$(dpkg --print-architecture)"
 PREFIX="/usr"
