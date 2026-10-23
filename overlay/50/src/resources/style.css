@@ -710,3 +710,15 @@ rubberband { border-radius: 2px; }
   color: #1b1b1b;
 }
 .progress-info-widget button:hover { background-color: #e6e6e6; }
+
+/* ---- status bar (Windows Explorer style) ------------------------------ */
+.status-bar {
+  background-color: #f3f3f3;
+  border-top: 1px solid #e5e5e5;
+  color: #1b1b1b;
+  min-height: 26px;
+}
+.status-bar label {
+  font-size: 0.88em;
+  color: #444444;
+}

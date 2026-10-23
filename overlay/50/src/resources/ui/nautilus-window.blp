@@ -462,6 +462,30 @@ template $NautilusWindow: Adw.ApplicationWindow {
               window-slot: bind template.active-slot;
             }
           }
+
+          [bottom]
+          Box status_bar {
+            spacing: 12;
+            margin-start: 10;
+            margin-end: 10;
+            margin-top: 3;
+            margin-bottom: 3;
+
+            styles [
+              "status-bar",
+            ]
+
+            Label status_bar_left {
+              xalign: 0;
+              hexpand: true;
+              ellipsize: end;
+            }
+
+            Label status_bar_right {
+              xalign: 1;
+            }
+          }
+
         };
       };
     };

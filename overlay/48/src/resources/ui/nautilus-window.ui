@@ -489,6 +489,32 @@
                         </child>
                       </object>
                     </child>
+                    <child type="bottom">
+                      <object class="GtkBox" id="status_bar">
+                        <property name="spacing">12</property>
+                        <property name="margin-start">10</property>
+                        <property name="margin-end">10</property>
+                        <property name="margin-top">3</property>
+                        <property name="margin-bottom">3</property>
+                        <style>
+                          <class name="status-bar"/>
+                        </style>
+                        <child>
+                          <object class="GtkLabel" id="status_bar_left">
+                            <property name="xalign">0</property>
+                            <property name="hexpand">True</property>
+                            <property name="ellipsize">end</property>
+                            <property name="label"></property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="status_bar_right">
+                            <property name="xalign">1</property>
+                            <property name="label"></property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </property>
               </object>
