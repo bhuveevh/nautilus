@@ -391,54 +391,275 @@ rubberband {
 }
 
 /* ==========================================================================
- * Windows Explorer look
- * ========================================================================== */
+ * Windows 11 look  (OpentiaFiles)
+ * ==========================================================================
+ * Loaded by GTK as <resource-base-path>/style.css, at APPLICATION priority,
+ * so these rules win over the system Adwaita theme.
+ */
 
-menubar {
-  background-color: @headerbar_bg_color;
-  border-bottom: 1px solid var(--border-color);
-  min-height: 30px;
-  padding: 0 6px;
+/* ---- palette ---------------------------------------------------------- */
+@define-color accent_bg_color #0078d4;
+@define-color accent_fg_color #ffffff;
+@define-color accent_color #ffffff;
+@define-color window_bg_color #f3f3f3;
+@define-color window_fg_color #1b1b1b;
+@define-color view_bg_color #ffffff;
+@define-color view_fg_color #1b1b1b;
+@define-color headerbar_bg_color #f3f3f3;
+@define-color headerbar_fg_color #1b1b1b;
+@define-color headerbar_border_color #e5e5e5;
+@define-color headerbar_backdrop_color #f3f3f3;
+@define-color headerbar_shade_color rgba(0,0,0,0.06);
+@define-color sidebar_bg_color #f3f3f3;
+@define-color sidebar_fg_color #1b1b1b;
+@define-color sidebar_backdrop_color #f3f3f3;
+@define-color secondary_sidebar_bg_color #f3f3f3;
+@define-color card_bg_color #ffffff;
+@define-color card_fg_color #1b1b1b;
+@define-color popover_bg_color #ffffff;
+@define-color popover_fg_color #1b1b1b;
+@define-color borders #e5e5e5;
+@define-color shade_color rgba(0,0,0,0.06);
+@define-color scrollbar_outline_color #ffffff;
+
+:root {
+  --accent-bg-color: #0078d4;
+  --accent-fg-color: #ffffff;
+  --accent-color: #ffffff;
+  --window-bg-color: #f3f3f3;
+  --window-fg-color: #1b1b1b;
+  --view-bg-color: #ffffff;
+  --view-fg-color: #1b1b1b;
+  --headerbar-bg-color: #f3f3f3;
+  --headerbar-fg-color: #1b1b1b;
+  --headerbar-border-color: #e5e5e5;
+  --headerbar-shade-color: rgba(0,0,0,0.06);
+  --sidebar-bg-color: #f3f3f3;
+  --sidebar-fg-color: #1b1b1b;
+  --popover-bg-color: #ffffff;
+  --popover-fg-color: #1b1b1b;
+  --card-bg-color: #ffffff;
+  --border-color: #e5e5e5;
+  --shade-color: rgba(0,0,0,0.06);
 }
 
+/* ---- typography ------------------------------------------------------- */
+window, headerbar, popover, popover.menu, menu, tooltip, .nautilus-window {
+  font-family: "Segoe UI", "Selawik", "Noto Sans", "DejaVu Sans", sans-serif;
+}
+window { font-size: 10pt; }
+
+/* ---- window / content ------------------------------------------------- */
+.nautilus-window, window.view, window.background {
+  background-color: #ffffff;
+  color: #1b1b1b;
+}
+
+/* ---- title bar -------------------------------------------------------- */
+headerbar {
+  background-image: none;
+  background-color: #f3f3f3;
+  color: #1b1b1b;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 38px;
+  padding: 0 4px;
+}
+headerbar:backdrop { background-color: #f3f3f3; color: #1b1b1b; }
+headerbar button,
+headerbar togglebutton,
+headerbar menubutton > button {
+  border-radius: 4px;
+  box-shadow: none;
+}
+headerbar button:hover,
+headerbar togglebutton:hover,
+headerbar menubutton > button:hover { background-color: #e6e6e6; }
+
+/* Windows-style window controls: flat, wide, square */
+headerbar windowcontrols { margin: 0; padding: 0; }
+headerbar windowcontrols button {
+  border-radius: 0;
+  min-width: 44px;
+  min-height: 38px;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+  background: transparent;
+}
+headerbar windowcontrols button:hover { background-color: #e0e0e0; }
+headerbar windowcontrols button:active { background-color: #d0d0d0; }
+headerbar windowcontrols button.close:hover,
+headerbar windowcontrols button.close:active { background-color: #c42b1c; color: #ffffff; }
+
+/* ---- classic menu bar ------------------------------------------------- */
+menubar {
+  background-color: #f3f3f3;
+  border-bottom: 1px solid #e5e5e5;
+  min-height: 30px;
+  padding: 0 4px;
+}
 menubar > item {
   padding: 3px 10px;
   border-radius: 4px;
+  color: #1b1b1b;
 }
+menubar > item:hover { background-color: #e6e6e6; }
+menubar > item:selected { background-color: #d7e7f7; }
 
-menubar > item:hover {
-  background-color: color-mix(in srgb, currentColor 12%, transparent);
-}
-
-menubar > item:selected {
-  background-color: var(--accent-bg-color);
-}
-
+/* ---- command bar ------------------------------------------------------ */
 .command-bar {
+  background-color: #f3f3f3;
+  border-bottom: 1px solid #e5e5e5;
   padding: 4px 6px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: @headerbar_bg_color;
 }
-
 .command-bar > button {
   border-radius: 4px;
   padding: 4px 10px;
   box-shadow: none;
+  color: #1b1b1b;
 }
-
-.command-bar > button:hover {
-  background-color: color-mix(in srgb, var(--accent-bg-color) 20%, transparent);
-}
-
+.command-bar > button:hover { background-color: #e6e6e6; }
 .command-bar > button:active,
-.command-bar > button:checked {
-  background-color: color-mix(in srgb, var(--accent-bg-color) 35%, transparent);
-}
+.command-bar > button:checked { background-color: #d7e7f7; }
 
+/* ---- address bar ------------------------------------------------------ */
 .nautilus-pathbar {
+  background-color: #ffffff;
+  border: 1px solid #d6d6d6;
   border-radius: 4px;
+  box-shadow: none;
 }
-
 .nautilus-path-button {
   border-radius: 3px;
+  color: #1b1b1b;
 }
+.nautilus-path-button:hover { background-color: #f0f0f0; }
+entry.nautilus-location-entry,
+.nautilus-location-entry {
+  background-color: #ffffff;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+/* ---- navigation pane (sidebar) --------------------------------------- */
+.navigation-sidebar,
+.sidebar,
+scrolledwindow.navigation-sidebar {
+  background-color: #f3f3f3;
+  border-right: 1px solid #e5e5e5;
+}
+.navigation-sidebar > row,
+.navigation-sidebar row {
+  border-radius: 4px;
+  min-height: 30px;
+  color: #1b1b1b;
+}
+.navigation-sidebar > row:hover,
+.navigation-sidebar row:hover { background-color: #e6e6e6; }
+.navigation-sidebar > row:selected,
+.navigation-sidebar row:selected {
+  background-color: #d7e7f7;
+  color: #1b1b1b;
+}
+.navigation-sidebar > row:selected:hover { background-color: #c9ddf3; }
+
+/* ---- details / list view --------------------------------------------- */
+.nautilus-list-view columnview,
+.nautilus-list-view columnview > listview {
+  background-color: #ffffff;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: 0;
+  margin-right: 0;
+  border-spacing: 0;
+}
+.nautilus-list-view columnview > listview > row {
+  border-radius: 0;
+  margin-left: 0;
+  margin-right: 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.nautilus-list-view columnview > listview > row:hover { background-color: #f5f5f5; }
+.nautilus-list-view columnview > listview > row:selected {
+  background-color: #cce4f7;
+  color: #1b1b1b;
+}
+.nautilus-list-view columnview > listview > row:selected:hover { background-color: #bcd9f2; }
+
+/* column header row */
+.nautilus-list-view columnview > header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+}
+.nautilus-list-view columnview > header button {
+  border-radius: 0;
+  box-shadow: none;
+  color: #5a5a5a;
+  font-size: 0.92em;
+}
+.nautilus-list-view columnview > header button:hover { background-color: #f0f0f0; }
+
+/* ---- icon / grid view ------------------------------------------------- */
+.nautilus-grid-view gridview { background-color: #ffffff; padding: 12px; border-spacing: 4px; }
+.nautilus-grid-view gridview > child { border-radius: 4px; }
+.nautilus-grid-view gridview > child:hover { background-color: #f5f5f5; }
+.nautilus-grid-view gridview > child:selected { background-color: #cce4f7; color: #1b1b1b; }
+.nautilus-grid-view .nautilus-view-cell { border-radius: 4px; }
+
+/* ---- tabs ------------------------------------------------------------- */
+tabbar { background-color: #f3f3f3; }
+tabbar tabbox > tab {
+  border-radius: 6px 6px 0 0;
+  padding: 4px 12px;
+  min-height: 28px;
+}
+tabbar tabbox > tab:selected { background-color: #ffffff; }
+tabbar tabbox > tab:hover { background-color: #e6e6e6; }
+
+/* ---- scrollbars ------------------------------------------------------- */
+scrollbar { background: transparent; border: none; }
+scrollbar slider {
+  background-color: #c8c8c8;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  min-width: 8px;
+  min-height: 8px;
+}
+scrollbar slider:hover { background-color: #a8a8a8; }
+scrollbar slider:active { background-color: #0078d4; }
+
+/* ---- popovers / menus ------------------------------------------------- */
+popover > arrow { background-color: #ffffff; }
+popover > contents {
+  background-color: #ffffff;
+  border: 1px solid #d6d6d6;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  padding: 4px;
+}
+popover.menu > contents { padding: 4px; }
+popover.menu modelbutton,
+popover.menu button.flat {
+  border-radius: 4px;
+  padding: 6px 10px;
+  min-height: 26px;
+}
+popover.menu modelbutton:hover,
+popover.menu button.flat:hover { background-color: #e6e6e6; }
+
+/* ---- tooltips --------------------------------------------------------- */
+tooltip {
+  background-color: #ffffff;
+  color: #1b1b1b;
+  border: 1px solid #d6d6d6;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ---- misc ------------------------------------------------------------- */
+.floating-bar { border-radius: 4px; }
+rubberband { border-radius: 2px; }
