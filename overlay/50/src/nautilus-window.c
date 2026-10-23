@@ -28,7 +28,7 @@
 #include <config.h>
 
 #include "nautilus-window.h"
-#include "nautilus-view.h"
+#include "nautilus-files-view.h"
 
 #include <gdk/gdkkeysyms.h>
 #include <glib/gi18n.h>
@@ -75,7 +75,6 @@ static void nautilus_window_back_or_forward (NautilusWindow *window,
                                              gboolean        back,
                                              guint           distance);
 static void nautilus_window_sync_location_widgets (NautilusWindow *window);
-static void nautilus_window_sync_status_bar (NautilusWindow *window);
 static void update_cursor (NautilusWindow *window);
 static void
 set_active_slot (NautilusWindow     *window,
@@ -122,7 +121,7 @@ struct _NautilusWindow
     /* Status bar (Windows Explorer style) */
     GtkWidget *status_bar_left;
     GtkWidget *status_bar_right;
-    NautilusView *status_bar_view; /* weak reference */
+    guint status_bar_timeout_id;
 
     guint sidebar_width_handler_id;
 
@@ -1291,6 +1290,12 @@ nautilus_window_finalize (GObject *object)
         window->sidebar_width_handler_id = 0;
     }
 
+    if (window->status_bar_timeout_id != 0)
+    {
+        g_source_remove (window->status_bar_timeout_id);
+        window->status_bar_timeout_id = 0;
+    }
+
     g_clear_object (&window->selected_file);
     g_clear_object (&window->selected_volume);
 
@@ -1386,8 +1391,6 @@ set_active_slot (NautilusWindow     *window,
         update_cursor (window);
     }
 
-    nautilus_window_sync_status_bar (window);
-
     g_object_notify_by_pspec (G_OBJECT (window), properties[PROP_ACTIVE_SLOT]);
 }
 
@@ -1396,9 +1399,9 @@ static void
 nautilus_window_update_status_bar (NautilusWindow *window)
 {
     NautilusWindowSlot *slot = window->active_slot;
-    NautilusView *view = NULL;
     g_autofree char *left = NULL;
     g_autofree char *right = NULL;
+    guint n = 0;
 
     if (window->status_bar_left == NULL || window->status_bar_right == NULL)
     {
@@ -1407,68 +1410,37 @@ nautilus_window_update_status_bar (NautilusWindow *window)
 
     if (slot != NULL)
     {
-        view = nautilus_window_slot_get_current_view (slot);
-    }
+        g_autoptr (GFile) location = nautilus_window_slot_get_location (slot);
 
-    if (view != NULL)
-    {
-        g_autoptr (GFile) location = nautilus_view_get_location (view);
         if (location != NULL)
         {
             left = g_file_get_basename (location);
         }
+
+        NautilusFilesView *view = nautilus_window_slot_get_current_view (slot);
+
+        if (view != NULL)
+        {
+            n = g_list_length (nautilus_files_view_get_selection (view));
+        }
+
     }
 
-    if (view != NULL)
+    if (n > 0)
     {
-        GList *selection = nautilus_view_get_selection (view);
-        guint n = g_list_length (selection);
-        if (n > 0)
-        {
-            right = g_strdup_printf (ngettext ("%u item selected", "%u items selected", n), n);
-        }
+        right = g_strdup_printf (ngettext ("%u item selected", "%u items selected", n), n);
     }
 
     gtk_label_set_text (GTK_LABEL (window->status_bar_left), left != NULL ? left : "");
     gtk_label_set_text (GTK_LABEL (window->status_bar_right), right != NULL ? right : "");
 }
 
-static void
-on_status_bar_view_changed (NautilusView   *view,
-                            GParamSpec     *pspec,
-                            NautilusWindow *window)
+static gboolean
+nautilus_window_status_bar_tick (gpointer user_data)
 {
-    nautilus_window_update_status_bar (window);
-}
+    nautilus_window_update_status_bar (NAUTILUS_WINDOW (user_data));
 
-static void
-nautilus_window_sync_status_bar (NautilusWindow *window)
-{
-    NautilusView *view = NULL;
-
-    if (window->status_bar_left == NULL)
-    {
-        return;
-    }
-
-    if (window->active_slot != NULL)
-    {
-        view = nautilus_window_slot_get_current_view (window->active_slot);
-    }
-
-    if (window->status_bar_view != view)
-    {
-        window->status_bar_view = view; /* weak reference */
-        if (view != NULL)
-        {
-            g_signal_connect_object (view, "notify::selection",
-                                     G_CALLBACK (on_status_bar_view_changed), window, 0);
-            g_signal_connect_object (view, "notify::location",
-                                     G_CALLBACK (on_status_bar_view_changed), window, 0);
-        }
-    }
-
-    nautilus_window_update_status_bar (window);
+    return G_SOURCE_CONTINUE;
 }
 
 static void
@@ -1686,6 +1658,8 @@ nautilus_window_init (NautilusWindow *window)
     window->active_slot = NULL;
 
     gtk_widget_add_css_class (GTK_WIDGET (window), "nautilus-window");
+
+    window->status_bar_timeout_id = g_timeout_add (700, nautilus_window_status_bar_tick, window);
 
     window_group = gtk_window_group_new ();
     gtk_window_group_add_window (window_group, GTK_WINDOW (window));
