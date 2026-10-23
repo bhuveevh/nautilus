@@ -1515,7 +1515,7 @@ on_home_shortcut_activated (GSimpleAction *action,
     }
 
     file = g_file_new_for_path (path);
-    nautilus_window_slot_open_location_full (window->active_slot, file, 0, NULL);
+    nautilus_window_slot_open_location_full (window->active_slot, file, NULL);
 }
 
 static GtkWidget *
@@ -1556,7 +1556,7 @@ home_open_location (NautilusWindow *window,
 {
     if (file != NULL && window->active_slot != NULL)
     {
-        nautilus_window_slot_open_location_full (window->active_slot, file, 0, NULL);
+        nautilus_window_slot_open_location_full (window->active_slot, file, NULL);
     }
 }
 
