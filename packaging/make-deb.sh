@@ -25,38 +25,31 @@ rmdir  pkgroot/usr/lib/*/pkgconfig 2>/dev/null || true
 rmdir  pkgroot/usr/include 2>/dev/null || true
 rmdir  pkgroot/usr/share/gir-1.0 2>/dev/null || true
 
-echo "==> Computing runtime dependencies (dpkg-shlibdeps)"
-DEPS=""
-if command -v dpkg-shlibdeps >/dev/null 2>&1; then
-  mkdir -p debian
-  cat > debian/control <<'EOF'
-Source: opentiafiles
-Priority: optional
-Maintainer: Bhuvee Paswan <bhuveepaswan@gmail.com>
-Standards-Version: 4.6.0
-Package: opentiafiles
-Architecture: any
-Description: OpentiaFiles file manager
-EOF
-  cat > debian/changelog <<EOF
-opentiafiles (1.0) unstable; urgency=low
-
-  * Local build.
-
- -- Bhuvee Paswan <bhuveepaswan@gmail.com>  $(date -R)
-EOF
-  # --ignore-missing-info: our own libnautilus-extension is not from a package,
-  # without this flag dpkg-shlibdeps aborts and we get no dependencies at all.
-  shlibs_out="$(dpkg-shlibdeps --ignore-missing-info -O \
-        pkgroot/usr/bin/opentia-files \
-        $(ls pkgroot/usr/lib/*/libnautilus-extension.so.* 2>/dev/null || true) \
-        $(ls pkgroot/usr/lib/*/nautilus/extensions-*/*.so 2>/dev/null || true) \
-        2>/dev/null || true)"
-  echo "    dpkg-shlibdeps: $shlibs_out"
-  DEPS="$(printf '%s\n' "$shlibs_out" | sed -n 's/^shlibs:Depends=//p')"
-fi
+echo "==> Computing runtime dependencies"
+# dpkg-shlibdeps under-reports here, so resolve each NEEDED library to the
+# package that owns it: NEEDED soname -> real path (ldconfig) -> dpkg -S owner.
+compute_deps() {
+  owners=""
+  for f in "$@"; do
+    [ -f "$f" ] || continue
+    for so in $(objdump -p "$f" 2>/dev/null | awk '/NEEDED/{print $2}'); do
+      path="$(ldconfig -p 2>/dev/null | awk -v s="$so" '$1==s {print $NF; exit}')"
+      [ -n "$path" ] || continue
+      owner="$(dpkg -S "$path" 2>/dev/null | head -1 | cut -d: -f1)"
+      [ -n "$owner" ] || continue
+      [ "$owner" = "opentiafiles" ] && continue
+      owners="$owners $owner"
+    done
+  done
+  printf '%s\n' $owners | sed '/^$/d' | sort -u | paste -sd, -
+}
+DEPS="$(compute_deps \
+      pkgroot/usr/bin/opentia-files \
+      $(ls pkgroot/usr/lib/*/libnautilus-extension.so.* 2>/dev/null || true) \
+      $(ls pkgroot/usr/lib/*/nautilus/extensions-*/*.so 2>/dev/null || true))"
+echo "    resolved: $DEPS"
 if [ -z "$DEPS" ]; then
-  echo "    (falling back to an explicit dependency list)"
+  echo "    (fallback explicit list)"
   DEPS="libc6, libglib2.0-0 | libglib2.0-0t64, libgtk-4-1 | libgtk-4-1t64, \
 libadwaita-1-0, libcairo2, libpango-1.0-0, libgdk-pixbuf-2.0-0 | libgdk-pixbuf-2.0-0t64, \
 libgraphene-1.0-0, libcloudproviders0, libgnome-autoar-0-0, \

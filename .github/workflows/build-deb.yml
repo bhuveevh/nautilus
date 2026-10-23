@@ -40,7 +40,7 @@ jobs:
           done
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential meson ninja-build pkg-config gettext dpkg-dev \
+            build-essential binutils meson ninja-build pkg-config gettext dpkg-dev \
             desktop-file-utils || true
           apt-get build-dep -y nautilus || true
           apt-get install -y --no-install-recommends \
@@ -83,14 +83,17 @@ jobs:
           deps="$(dpkg-query -W -f='${Depends}' opentiafiles | tr ',|' '\n' | sed 's/(.*//' | tr -d ' ')"
           echo "Depends: $deps"
           missing=""
-          for so in $(objdump -p /usr/bin/opentia-files | awk '/NEEDED/{print $2}'); do
-            owner="$(dpkg -S "$so" 2>/dev/null | head -1 | cut -d: -f1 || true)"
-            if [ -z "$owner" ] || [ "$owner" = "opentiafiles" ]; then
-              continue
-            fi
-            if ! printf '%s\n' "$deps" | grep -qx "$owner"; then
-              missing="$missing $so=$owner"
-            fi
+          for f in /usr/bin/opentia-files /usr/lib/*/libnautilus-extension.so.* /usr/lib/*/nautilus/extensions-*/*.so; do
+            [ -f "$f" ] || continue
+            for so in $(objdump -p "$f" 2>/dev/null | awk '/NEEDED/{print $2}'); do
+              path="$(ldconfig -p 2>/dev/null | awk -v s="$so" '$1==s {print $NF; exit}')"
+              if [ -z "$path" ]; then echo "UNRESOLVED: $so (in $f)"; continue; fi
+              owner="$(dpkg -S "$path" 2>/dev/null | head -1 | cut -d: -f1)"
+              if [ -z "$owner" ] || [ "$owner" = "opentiafiles" ]; then continue; fi
+              if ! printf '%s\n' "$deps" | grep -qx "$owner"; then
+                missing="$missing $so=$owner"
+              fi
+            done
           done
           if [ -n "$missing" ]; then
             echo "DEPS COVERAGE FAILED:$missing"
@@ -148,7 +151,7 @@ jobs:
           done
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential meson ninja-build pkg-config gettext dpkg-dev \
+            build-essential binutils meson ninja-build pkg-config gettext dpkg-dev \
             desktop-file-utils blueprint-compiler || true
           apt-get build-dep -y nautilus || true
           apt-get install -y --no-install-recommends \
