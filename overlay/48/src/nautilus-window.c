@@ -1411,7 +1411,6 @@ nautilus_window_update_status_bar (NautilusWindow *window)
     NautilusWindowSlot *slot = window->active_slot;
     g_autofree char *left = NULL;
     g_autofree char *right = NULL;
-    guint n = 0;
 
     if (window->status_bar_left == NULL || window->status_bar_right == NULL)
     {
@@ -1424,21 +1423,45 @@ nautilus_window_update_status_bar (NautilusWindow *window)
 
         if (location != NULL)
         {
-            left = g_file_get_basename (location);
+            NautilusFile *dir_file = nautilus_file_get (location);
+
+            if (dir_file != NULL)
+            {
+                guint count = 0;
+                gboolean done = FALSE;
+
+                if (nautilus_file_get_directory_item_count (dir_file, &count, &done) && done)
+                {
+                    left = g_strdup_printf (ngettext ("%u item", "%u items", count), count);
+                }
+
+                g_object_unref (dir_file);
+            }
         }
 
         NautilusView *view = nautilus_window_slot_get_current_view (slot);
 
         if (view != NULL)
         {
-            n = g_list_length (nautilus_view_get_selection (view));
+            GList *selection = nautilus_view_get_selection (view);
+            guint n = g_list_length (selection);
+
+            if (n > 0)
+            {
+                goffset total = 0;
+                GList *l;
+
+                for (l = selection; l != NULL; l = l->next)
+                {
+                    total += nautilus_file_get_size (NAUTILUS_FILE (l->data));
+                }
+
+                g_autofree char *size_str = g_format_size (total);
+                right = g_strdup_printf (ngettext ("%u item selected \u00b7 %s",
+                                                   "%u items selected \u00b7 %s", n), n, size_str);
+            }
         }
 
-    }
-
-    if (n > 0)
-    {
-        right = g_strdup_printf (ngettext ("%u item selected", "%u items selected", n), n);
     }
 
     gtk_label_set_text (GTK_LABEL (window->status_bar_left), left != NULL ? left : "");

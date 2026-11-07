@@ -316,11 +316,6 @@
                                     <property name="icon-name">folder-new-symbolic</property>
                                   </object>
                                 </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">New</property>
-                                  </object>
-                                </child>
                               </object>
                             </child>
                           </object>
@@ -336,11 +331,6 @@
                                 <child>
                                   <object class="GtkImage">
                                     <property name="icon-name">edit-cut-symbolic</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Cut</property>
                                   </object>
                                 </child>
                               </object>
@@ -360,11 +350,6 @@
                                     <property name="icon-name">edit-copy-symbolic</property>
                                   </object>
                                 </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Copy</property>
-                                  </object>
-                                </child>
                               </object>
                             </child>
                           </object>
@@ -380,11 +365,6 @@
                                 <child>
                                   <object class="GtkImage">
                                     <property name="icon-name">edit-paste-symbolic</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Paste</property>
                                   </object>
                                 </child>
                               </object>
@@ -404,11 +384,6 @@
                                     <property name="icon-name">document-edit-symbolic</property>
                                   </object>
                                 </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Rename</property>
-                                  </object>
-                                </child>
                               </object>
                             </child>
                           </object>
@@ -426,11 +401,6 @@
                                     <property name="icon-name">user-trash-symbolic</property>
                                   </object>
                                 </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Delete</property>
-                                  </object>
-                                </child>
                               </object>
                             </child>
                           </object>
@@ -446,11 +416,6 @@
                                 <child>
                                   <object class="GtkImage">
                                     <property name="icon-name">document-properties-symbolic</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label" translatable="yes">Properties</property>
                                   </object>
                                 </child>
                               </object>
