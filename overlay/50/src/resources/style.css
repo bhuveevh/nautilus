@@ -808,9 +808,6 @@ gridview > child:selected { background-color: #cce4f7; color: #1b1b1b; }
 
 /* scrollbars (no negative min sizes) */
 scrollbar slider {
-  min-width: 6px;
-  min-height: 6px;
-  border: none;
   border-radius: 4px;
   background-color: #c8c8c8;
 }

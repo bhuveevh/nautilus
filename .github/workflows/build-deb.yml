@@ -121,27 +121,34 @@ jobs:
         working-directory: nsrc
         run: |
           set -eux
-          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps openbox wmctrl || true
+          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps openbox wmctrl xdotool || true
           id -u shotuser >/dev/null 2>&1 || useradd -m -s /bin/bash shotuser
           cat > /tmp/shot.sh <<'EOSH'
           #!/bin/bash
           export DISPLAY=:99
-          export XDG_RUNTIME_DIR=/tmp/xdg-$$
-          mkdir -p "$XDG_RUNTIME_DIR"
           openbox >/dev/null 2>&1 &
           sleep 3
           maximize() { WID=$(wmctrl -l | awk 'NR==1{print $1}'); if [ -n "$WID" ]; then wmctrl -i -r "$WID" -b add,maximized_vert,maximized_horz || true; fi; }
           /usr/bin/opentia-files &
           sleep 24
-          wmctrl -l || true
           maximize; sleep 4
           import -window root /tmp/shot-home.png || true
-          pkill -f opentia-files || true
-          sleep 4
+          pkill -f opentia-files; sleep 3
           /usr/bin/opentia-files /usr/share &
           sleep 22
           maximize; sleep 4
           import -window root /tmp/shot-folder.png || true
+          xdotool mousemove 326 197 click 3
+          sleep 3
+          import -window root /tmp/shot-context.png || true
+          xdotool key Escape; sleep 2
+          xdotool mousemove 275 66 click 1
+          sleep 3
+          import -window root /tmp/shot-menubar.png || true
+          xdotool key Escape; sleep 2
+          gapplication action io.github.bhuveevh.OpentiaFiles preferences &
+          sleep 9
+          import -window root /tmp/shot-prefs.png || true
           pkill -f opentia-files || true
           EOSH
           chmod 0755 /tmp/shot.sh
@@ -149,18 +156,20 @@ jobs:
           sleep 3
           su shotuser -c 'dbus-run-session -- /tmp/shot.sh' >/tmp/app.log 2>&1 || true
           ls -l /tmp/shot-*.png || true
-          cp /tmp/shot-home.png ./shot-home.png || true
-          cp /tmp/shot-folder.png ./shot-folder.png || true
+          for f in home folder context menubar prefs; do cp /tmp/shot-$f.png ./shot-$f.png 2>/dev/null || true; done
           echo '--- app log ---'
-          tail -50 /tmp/app.log || true
+          tail -40 /tmp/app.log || true
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: screenshots-48
+          name: screenshots-50
           path: |
             nsrc/shot-home.png
             nsrc/shot-folder.png
+            nsrc/shot-context.png
+            nsrc/shot-menubar.png
+            nsrc/shot-prefs.png
           if-no-files-found: warn
 
   build-50:
