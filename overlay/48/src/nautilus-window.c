@@ -1420,7 +1420,7 @@ nautilus_window_update_status_bar (NautilusWindow *window)
 
     if (slot != NULL)
     {
-        g_autoptr (GFile) location = nautilus_window_slot_get_location (slot);
+        GFile *location = nautilus_window_slot_get_location (slot);
 
         if (location != NULL)
         {
@@ -1656,7 +1656,7 @@ nautilus_window_build_home_page (NautilusWindow *window)
         for (l = nautilus_bookmark_list_get_all (bookmarks); l != NULL; l = l->next)
         {
             NautilusBookmark *bookmark = NAUTILUS_BOOKMARK (l->data);
-            g_autoptr (GFile) location = nautilus_bookmark_get_location (bookmark);
+            GFile *location = nautilus_bookmark_get_location (bookmark);
             g_autofree char *name = nautilus_bookmark_get_name (bookmark);
 
             home_add_row (GTK_LIST_BOX (window->home_favorites),
@@ -1711,7 +1711,7 @@ nautilus_window_update_home_page (NautilusWindow *window)
     }
 
     {
-        g_autoptr (GFile) location = nautilus_window_slot_get_location (window->active_slot);
+        GFile *location = nautilus_window_slot_get_location (window->active_slot);
         g_autoptr (GFile) home = g_file_new_for_path (g_get_home_dir ());
 
         at_home = location != NULL && g_file_equal (location, home);

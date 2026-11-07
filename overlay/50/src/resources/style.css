@@ -740,3 +740,87 @@ rubberband { border-radius: 2px; }
 .home-list > row { border-radius: 4px; }
 .home-list > row:hover { background-color: #f0f6fc; }
 .home-page, scrolledwindow.home-page { background-color: #ffffff; }
+
+
+/* ==========================================================================
+ * Windows 11 hard overrides  (must stay last in this file)
+ * ========================================================================== */
+
+/* square everything */
+window.csd, window.background, window, .nautilus-window { border-radius: 0; }
+headerbar, .titlebar, menubar, .command-bar, .status-bar, tabbar,
+.navigation-sidebar, listview, gridview, popover > contents { border-radius: 0; }
+
+button, togglebutton, menubutton > button, splitbutton > button {
+  border-radius: 3px;
+  box-shadow: none;
+}
+
+/* title bar: flat, square, Windows grey */
+headerbar {
+  background-image: none;
+  background-color: #f3f3f3;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 40px;
+}
+headerbar:backdrop { background-color: #f3f3f3; }
+
+/* command bar: flat square buttons */
+.command-bar > button {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  box-shadow: none;
+  padding: 4px 10px;
+  color: #1b1b1b;
+}
+.command-bar > button:hover { background-color: #e6e6e6; border-color: #e6e6e6; }
+.command-bar > button:active,
+.command-bar > button:checked { background-color: #d7e7f7; border-color: #c3ddf3; }
+
+/* menu bar */
+menubar { background-color: #f3f3f3; border-bottom: 1px solid #e5e5e5; min-height: 30px; }
+menubar > item { border-radius: 3px; padding: 3px 10px; }
+
+/* navigation pane: square rows, Windows selection */
+.navigation-sidebar, .sidebar { background-color: #f3f3f3; border-right: 1px solid #e5e5e5; }
+.navigation-sidebar row, .navigation-sidebar > row { border-radius: 0; min-height: 30px; }
+.navigation-sidebar row:hover { background-color: #e6e6e6; }
+.navigation-sidebar row:selected { background-color: #d7e7f7; color: #1b1b1b; }
+
+/* file rows: full width, square, thin separators */
+listview > row { border-radius: 0; }
+.nautilus-list-view columnview > listview > row { border-radius: 0; border-bottom: 1px solid #f0f0f0; }
+.nautilus-list-view columnview > listview > row:selected { background-color: #cce4f7; color: #1b1b1b; }
+gridview > child { border-radius: 3px; }
+gridview > child:selected { background-color: #cce4f7; color: #1b1b1b; }
+
+/* status bar */
+.status-bar {
+  background-color: #f3f3f3;
+  border-top: 1px solid #e5e5e5;
+  min-height: 26px;
+  color: #1b1b1b;
+}
+.status-bar label { font-size: 0.86em; color: #444444; }
+
+/* scrollbars (no negative min sizes) */
+scrollbar slider {
+  min-width: 6px;
+  min-height: 6px;
+  border: none;
+  border-radius: 4px;
+  background-color: #c8c8c8;
+}
+scrollbar slider:hover { background-color: #a8a8a8; }
+
+/* popovers / menus */
+popover > contents { border-radius: 4px; border: 1px solid #d6d6d6; }
+
+/* home page */
+.home-card { border-radius: 4px; background-color: #fbfbfb; border: 1px solid #e5e5e5; box-shadow: none; }
+.home-card:hover { background-color: #f0f6fc; border-color: #cfe3f7; }
+.home-list { background-color: #fbfbfb; border: 1px solid #e5e5e5; border-radius: 4px; }
+.home-list > row { border-radius: 0; }

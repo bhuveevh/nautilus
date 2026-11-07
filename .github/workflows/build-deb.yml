@@ -121,31 +121,38 @@ jobs:
         working-directory: nsrc
         run: |
           set -eux
-          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps || true
+          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps openbox wmctrl || true
           id -u shotuser >/dev/null 2>&1 || useradd -m -s /bin/bash shotuser
-          printf '%s\n' '#!/bin/bash' \
-            'export DISPLAY=:99' \
-            'export XDG_RUNTIME_DIR=/tmp/xdg-$$' \
-            'mkdir -p "$XDG_RUNTIME_DIR"' \
-            '/usr/bin/opentia-files &' \
-            'sleep 14' \
-            'import -window root /tmp/shot-home.png || true' \
-            'pkill -f opentia-files || true' \
-            'sleep 2' \
-            '/usr/bin/opentia-files /usr/share &' \
-            'sleep 14' \
-            'import -window root /tmp/shot-folder.png || true' \
-            'pkill -f opentia-files || true' \
-            > /tmp/shot.sh
+          cat > /tmp/shot.sh <<'EOSH'
+          #!/bin/bash
+          export DISPLAY=:99
+          export XDG_RUNTIME_DIR=/tmp/xdg-$$
+          mkdir -p "$XDG_RUNTIME_DIR"
+          openbox >/dev/null 2>&1 &
+          sleep 3
+          maximize() { WID=$(wmctrl -l | awk 'NR==1{print $1}'); if [ -n "$WID" ]; then wmctrl -i -r "$WID" -b add,maximized_vert,maximized_horz || true; fi; }
+          /usr/bin/opentia-files &
+          sleep 24
+          wmctrl -l || true
+          maximize; sleep 4
+          import -window root /tmp/shot-home.png || true
+          pkill -f opentia-files || true
+          sleep 4
+          /usr/bin/opentia-files /usr/share &
+          sleep 22
+          maximize; sleep 4
+          import -window root /tmp/shot-folder.png || true
+          pkill -f opentia-files || true
+          EOSH
           chmod 0755 /tmp/shot.sh
-          Xvfb :99 -screen 0 1440x900x24 -ac >/tmp/xvfb.log 2>&1 &
+          Xvfb :99 -screen 0 1366x768x24 -ac >/tmp/xvfb.log 2>&1 &
           sleep 3
           su shotuser -c 'dbus-run-session -- /tmp/shot.sh' >/tmp/app.log 2>&1 || true
           ls -l /tmp/shot-*.png || true
           cp /tmp/shot-home.png ./shot-home.png || true
           cp /tmp/shot-folder.png ./shot-folder.png || true
           echo '--- app log ---'
-          tail -40 /tmp/app.log || true
+          tail -50 /tmp/app.log || true
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -267,31 +274,38 @@ jobs:
         working-directory: nsrc
         run: |
           set -eux
-          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps || true
+          apt-get install -y --no-install-recommends xvfb dbus imagemagick x11-apps openbox wmctrl || true
           id -u shotuser >/dev/null 2>&1 || useradd -m -s /bin/bash shotuser
-          printf '%s\n' '#!/bin/bash' \
-            'export DISPLAY=:99' \
-            'export XDG_RUNTIME_DIR=/tmp/xdg-$$' \
-            'mkdir -p "$XDG_RUNTIME_DIR"' \
-            '/usr/bin/opentia-files &' \
-            'sleep 14' \
-            'import -window root /tmp/shot-home.png || true' \
-            'pkill -f opentia-files || true' \
-            'sleep 2' \
-            '/usr/bin/opentia-files /usr/share &' \
-            'sleep 14' \
-            'import -window root /tmp/shot-folder.png || true' \
-            'pkill -f opentia-files || true' \
-            > /tmp/shot.sh
+          cat > /tmp/shot.sh <<'EOSH'
+          #!/bin/bash
+          export DISPLAY=:99
+          export XDG_RUNTIME_DIR=/tmp/xdg-$$
+          mkdir -p "$XDG_RUNTIME_DIR"
+          openbox >/dev/null 2>&1 &
+          sleep 3
+          maximize() { WID=$(wmctrl -l | awk 'NR==1{print $1}'); if [ -n "$WID" ]; then wmctrl -i -r "$WID" -b add,maximized_vert,maximized_horz || true; fi; }
+          /usr/bin/opentia-files &
+          sleep 24
+          wmctrl -l || true
+          maximize; sleep 4
+          import -window root /tmp/shot-home.png || true
+          pkill -f opentia-files || true
+          sleep 4
+          /usr/bin/opentia-files /usr/share &
+          sleep 22
+          maximize; sleep 4
+          import -window root /tmp/shot-folder.png || true
+          pkill -f opentia-files || true
+          EOSH
           chmod 0755 /tmp/shot.sh
-          Xvfb :99 -screen 0 1440x900x24 -ac >/tmp/xvfb.log 2>&1 &
+          Xvfb :99 -screen 0 1366x768x24 -ac >/tmp/xvfb.log 2>&1 &
           sleep 3
           su shotuser -c 'dbus-run-session -- /tmp/shot.sh' >/tmp/app.log 2>&1 || true
           ls -l /tmp/shot-*.png || true
           cp /tmp/shot-home.png ./shot-home.png || true
           cp /tmp/shot-folder.png ./shot-folder.png || true
           echo '--- app log ---'
-          tail -40 /tmp/app.log || true
+          tail -50 /tmp/app.log || true
 
       - uses: actions/upload-artifact@v4
         if: always()
