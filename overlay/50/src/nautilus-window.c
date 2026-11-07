@@ -1438,7 +1438,7 @@ nautilus_window_update_status_bar (NautilusWindow *window)
             }
         }
 
-        NautilusView *view = nautilus_window_slot_get_current_view (slot);
+        NautilusFilesView *view = nautilus_window_slot_get_current_view (slot);
 
         if (view != NULL)
         {
